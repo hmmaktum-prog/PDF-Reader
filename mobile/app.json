@@ -1,7 +1,8 @@
 {
   "expo": {
     "name": "PDF Power Tools",
-    "slug": "pdf-power-tools",
+    "slug": "mobile",
+    "owner": "hmmaktum",
     "version": "1.0.0",
     "runtimeVersion": {
       "policy": "appVersion"
@@ -57,7 +58,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "YOUR_EAS_PROJECT_ID"
+        "projectId": "f90b6b40-5428-4bef-902f-482389e2b175"
       }
     }
   }
