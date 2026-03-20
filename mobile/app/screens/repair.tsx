@@ -37,8 +37,8 @@ export default function RepairScreen() {
   };
 
   const handleAction = async (onProgress: (pct: number, label?: string) => void) => {
-    if (!selectedFile) throw new Error('প্রথমে একটি PDF ফাইল নির্বাচন করুন');
-    const outputPath = '/storage/emulated/0/Download/PDFPowerTools/repaired_output.pdf';
+    if (!selectedFile) throw new Error('Please select a PDF file first');
+    const outputPath = getOutputPath('repaired_output.pdf');
     
     if (isEncrypted && password) {
       onProgress(10, 'Decrypting file...');

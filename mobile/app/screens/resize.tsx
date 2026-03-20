@@ -33,8 +33,8 @@ export default function ResizeScreen() {
   const muted = isDark ? '#888' : '#999';
 
   const handleAction = async (onProgress) => {
-    if (!selectedFile) throw new Error('প্রথমে একটি PDF ফাইল নির্বাচন করুন');
-    const outputPath = '/storage/emulated/0/Download/PDFPowerTools/resized_output.pdf';
+    if (!selectedFile) throw new Error('Please select a PDF file first');
+    const outputPath = getOutputPath('resized_output.pdf');
     const w = targetSize.id === 'Custom' ? parseInt(customW) : targetSize.w;
     const h = targetSize.id === 'Custom' ? parseInt(customH) : targetSize.h;
     onProgress(20, 'Loading PDF with QPDF...');

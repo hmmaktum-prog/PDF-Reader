@@ -4,6 +4,7 @@ import ToolShell from '../components/ToolShell';
 import { useAppTheme } from '../context/ThemeContext';
 import { compressPdf } from '../utils/nativeModules';
 import { pickSinglePdf } from '../utils/filePicker';
+import { getOutputPath, ensureOutputDir } from '../utils/outputPath';
 
 export default function CompressScreen() {
   const { isDark } = useAppTheme();
@@ -43,8 +44,9 @@ export default function CompressScreen() {
   };
 
   const handleCompress = async (onProgress: (pct: number, label?: string) => void) => {
-    if (!selectedFile) throw new Error('প্রথমে একটি PDF ফাইল নির্বাচন করুন');
-    const outputPath = '/storage/emulated/0/Download/PDFPowerTools/compressed_output.pdf';
+    if (!selectedFile) throw new Error('Please select a PDF file first');
+    await ensureOutputDir();
+    const outputPath = getOutputPath('compressed_output.pdf');
     onProgress(10, 'Analyzing PDF structure...');
     await new Promise(r => setTimeout(r, 400));
     onProgress(35, `Optimizing streams (Grayscale: ${grayscale})...`);

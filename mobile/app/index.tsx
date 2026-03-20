@@ -7,8 +7,7 @@ import {
   ScrollView,
   StatusBar,
   Animated,
-  Image,
-  Dimensions,
+  useWindowDimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
@@ -16,8 +15,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme } from './context/ThemeContext';
 import { useContinueTool } from './context/ContinueContext';
 import * as Haptics from 'expo-haptics';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const QUICK_TOOLS = [
   { id: 'merge',        name: 'Merge',      icon: '🔗', route: '/screens/merge',        grad: ['#007AFF', '#0055CC'] as const },
@@ -42,6 +39,7 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { isDark, theme, setTheme } = useAppTheme();
   const { sharedFilePath, clearState } = useContinueTool();
+  const { width: SCREEN_WIDTH } = useWindowDimensions();
 
   const fadeAnim   = useRef(new Animated.Value(0)).current;
   const slideAnim  = useRef(new Animated.Value(40)).current;
@@ -78,6 +76,12 @@ export default function HomeScreen() {
 
   const themeIcon = theme === 'dark' ? '🌙' : theme === 'light' ? '☀️' : '🌗';
 
+  const isLandscape = SCREEN_WIDTH > 600;
+  const COLS = isLandscape ? 6 : 4;
+  const GRID_PADDING = 28;
+  const GRID_GAP = 10;
+  const gridCardWidth = (SCREEN_WIDTH - GRID_PADDING - GRID_GAP * (COLS - 1)) / COLS;
+
   return (
     <View style={[styles.root, { backgroundColor: bg }]}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
@@ -92,7 +96,7 @@ export default function HomeScreen() {
             colors={['#0a1628', '#0d2760', '#1a4fd6']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-            style={styles.hero}
+            style={[styles.hero, isLandscape && styles.heroLandscape]}
           >
             <View style={styles.heroGrid} />
 
@@ -100,25 +104,35 @@ export default function HomeScreen() {
               <Text style={styles.themeBtnText}>{themeIcon}</Text>
             </TouchableOpacity>
 
-            <Animated.View style={[styles.heroIconWrap, { transform: [{ scale: pulseAnim }] }]}>
-              <LinearGradient
-                colors={['#FFD60A', '#FF9500']}
-                style={styles.heroBolt}
-              >
-                <Text style={styles.heroBoltText}>⚡</Text>
-              </LinearGradient>
-              <Text style={styles.heroDoc}>📑</Text>
-            </Animated.View>
+            {!isLandscape && (
+              <Animated.View style={[styles.heroIconWrap, { transform: [{ scale: pulseAnim }] }]}>
+                <LinearGradient
+                  colors={['#FFD60A', '#FF9500']}
+                  style={styles.heroBolt}
+                >
+                  <Text style={styles.heroBoltText}>⚡</Text>
+                </LinearGradient>
+                <Text style={styles.heroDoc}>📑</Text>
+              </Animated.View>
+            )}
 
-            <Text style={styles.heroTitle}>PDF Power Tools</Text>
-            <Text style={styles.heroSub}>NDK Engine · 100% Offline · Lightning Fast</Text>
-
-            <View style={styles.tagRow}>
-              {['⚡ Ultra Fast', '📴 No Upload', '🔒 Private'].map(t => (
-                <View key={t} style={styles.tag}>
-                  <Text style={styles.tagText}>{t}</Text>
+            <View style={isLandscape ? styles.heroTextRowLandscape : undefined}>
+              {isLandscape && (
+                <Animated.View style={{ transform: [{ scale: pulseAnim }], marginRight: 16 }}>
+                  <Text style={{ fontSize: 48 }}>📑</Text>
+                </Animated.View>
+              )}
+              <View>
+                <Text style={styles.heroTitle}>PDF Power Tools</Text>
+                <Text style={styles.heroSub}>NDK Engine · 100% Offline · Lightning Fast</Text>
+                <View style={styles.tagRow}>
+                  {['⚡ Ultra Fast', '📴 No Upload', '🔒 Private'].map(t => (
+                    <View key={t} style={styles.tag}>
+                      <Text style={styles.tagText}>{t}</Text>
+                    </View>
+                  ))}
                 </View>
-              ))}
+              </View>
             </View>
           </LinearGradient>
         </Animated.View>
@@ -146,7 +160,7 @@ export default function HomeScreen() {
 
         {/* ── Stats Row ── */}
         <Animated.View style={[styles.statsRow, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          {STATS.map((s, i) => (
+          {STATS.map((s) => (
             <Animated.View
               key={s.label}
               style={[
@@ -188,7 +202,7 @@ export default function HomeScreen() {
                 activeOpacity={0.75}
                 testID={`button-quick-${tool.id}`}
               >
-                <View style={[styles.gridCard, { backgroundColor: cardBg, borderColor: border }]}>
+                <View style={[styles.gridCard, { backgroundColor: cardBg, borderColor: border, width: gridCardWidth }]}>
                   <LinearGradient colors={tool.grad} style={styles.gridIconBg}>
                     <Text style={styles.gridIcon}>{tool.icon}</Text>
                   </LinearGradient>
@@ -261,6 +275,9 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     shadowRadius: 20,
   },
+  heroLandscape: {
+    paddingVertical: 18,
+  },
   heroGrid: {
     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
     opacity: 0.04,
@@ -271,9 +288,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff18',
     borderRadius: 22, padding: 8,
     borderWidth: 1, borderColor: '#ffffff22',
+    zIndex: 1,
   },
   themeBtnText: { fontSize: 16 },
 
+  heroTextRowLandscape: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   heroIconWrap: {
     alignItems: 'center',
     marginBottom: 18,
@@ -281,7 +303,7 @@ const styles = StyleSheet.create({
   },
   heroBolt: {
     position: 'absolute',
-    top: -6, right: SCREEN_WIDTH * 0.28,
+    top: -6, right: 60,
     width: 32, height: 32, borderRadius: 16,
     justifyContent: 'center', alignItems: 'center',
     elevation: 6,
@@ -327,7 +349,6 @@ const styles = StyleSheet.create({
 
   grid:     { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   gridCard: {
-    width: (SCREEN_WIDTH - 28 - 30) / 4,
     paddingVertical: 14, paddingHorizontal: 4,
     borderRadius: 20, alignItems: 'center',
     borderWidth: 1,

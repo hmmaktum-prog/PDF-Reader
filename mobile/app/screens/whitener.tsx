@@ -35,8 +35,8 @@ export default function WhitenerScreen() {
   };
 
   const handleAction = async (onProgress: (pct: number, label?: string) => void) => {
-    if (!selectedFile) throw new Error('প্রথমে একটি PDF ফাইল নির্বাচন করুন');
-    const outputPath = '/storage/emulated/0/Download/PDFPowerTools/whitened_output.pdf';
+    if (!selectedFile) throw new Error('Please select a PDF file first');
+    const outputPath = getOutputPath('whitened_output.pdf');
 
     if (useAI) {
       onProgress(10, 'Connecting to Gemini 2.5 Flash...');

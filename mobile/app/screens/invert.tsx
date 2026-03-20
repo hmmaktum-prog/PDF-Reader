@@ -27,8 +27,8 @@ export default function InvertScreen() {
   const muted = isDark ? '#888' : '#666';
 
   const handleAction = async (onProgress) => {
-    if (!selectedFile) throw new Error('প্রথমে একটি PDF ফাইল নির্বাচন করুন');
-    const outputPath = '/storage/emulated/0/Download/PDFPowerTools/inverted_output.pdf';
+    if (!selectedFile) throw new Error('Please select a PDF file first');
+    const outputPath = getOutputPath('inverted_output.pdf');
     onProgress(15, 'Rendering pages via MuPDF...');
     await new Promise(r => setTimeout(r, 500));
     onProgress(50, 'Inverting pixel values...');

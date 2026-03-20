@@ -32,9 +32,9 @@ export default function RemovePagesScreen() {
   };
 
   const handleAction = async (onProgress: (pct: number, label?: string) => void) => {
-    if (!selectedFile) throw new Error('প্রথমে একটি PDF ফাইল নির্বাচন করুন');
-    if (selected.size === 0) throw new Error('ডিলিট করার জন্য অন্তত ১টি পেজ সিলেক্ট করুন');
-    const outputPath = '/storage/emulated/0/Download/PDFPowerTools/removed_pages_output.pdf';
+    if (!selectedFile) throw new Error('Please select a PDF file first');
+    if (selected.size === 0) throw new Error('Please select at least 1 page to remove');
+    const outputPath = getOutputPath('removed_pages_output.pdf');
     onProgress(20, 'Loading PDF with QPDF...');
     await new Promise(r => setTimeout(r, 300));
     onProgress(55, `Removing ${selected.size} pages...`);

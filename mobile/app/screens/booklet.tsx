@@ -21,8 +21,8 @@ export default function BookletScreen() {
   const muted = isDark ? '#888' : '#999';
 
   const handleAction = async (onProgress) => {
-    if (!selectedFile) throw new Error('প্রথমে একটি PDF ফাইল নির্বাচন করুন');
-    const outputPath = '/storage/emulated/0/Download/PDFPowerTools/booklet_output.pdf';
+    if (!selectedFile) throw new Error('Please select a PDF file first');
+    const outputPath = getOutputPath('booklet_output.pdf');
     onProgress(20, 'Analyzing page count...');
     await new Promise(r => setTimeout(r, 400));
     onProgress(50, `Rearranging for booklet (Auto Pad: ${autoPadding})...`);

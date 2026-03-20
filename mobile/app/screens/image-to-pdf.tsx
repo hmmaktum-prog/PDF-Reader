@@ -73,8 +73,8 @@ export default function ImageToPdfScreen() {
   };
 
   const handleAction = async (onProgress: (pct: number, label?: string) => void) => {
-    if (images.length === 0) throw new Error('অন্তত ১টি ছবি নির্বাচন করুন');
-    const outputPath = '/storage/emulated/0/Download/PDFPowerTools/images_output.pdf';
+    if (images.length === 0) throw new Error('Please select at least 1 image');
+    const outputPath = getOutputPath('images_output.pdf');
     onProgress(10, 'Preparing images...');
     await new Promise(r => setTimeout(r, 600));
     onProgress(40, `Writing ${images.length} images to PDF (Orient: ${orientation})...`);

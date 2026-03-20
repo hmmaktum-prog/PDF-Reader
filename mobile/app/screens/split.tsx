@@ -9,6 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import ToolShell from '../components/ToolShell';
+import { getOutputPath, ensureOutputDir } from '../utils/outputPath';
 import { useAppTheme } from '../context/ThemeContext';
 import { splitPdf } from '../utils/nativeModules';
 import { pickSinglePdf } from '../utils/filePicker';
@@ -50,8 +51,8 @@ export default function SplitScreen() {
   ] as const;
 
   const handleSplit = async (onProgress: (pct: number, label?: string) => void) => {
-    if (!selectedFile) throw new Error('প্রথমে একটি PDF ফাইল নির্বাচন করুন');
-    const outputDir = '/storage/emulated/0/Download/PDFPowerTools/split_output';
+    if (!selectedFile) throw new Error('Please select a PDF file first');
+    const outputDir = getOutputPath('split_output');
     onProgress(10, 'Opening PDF with QPDF...');
     await new Promise(r => setTimeout(r, 300));
     onProgress(30, 'Analyzing page ranges...');

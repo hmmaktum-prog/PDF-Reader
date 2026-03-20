@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useAppTheme } from '../context/ThemeContext';
 
 interface PagePlaceholderProps {
@@ -17,21 +18,32 @@ export default function PagePlaceholder({
 }: PagePlaceholderProps) {
   const { isDark } = useAppTheme();
 
-  const bg = selected
-    ? '#007AFF22'
-    : isDark ? '#2a2a2a' : '#e8e8e8';
-  const borderColor = selected ? '#007AFF' : isDark ? '#444' : '#cccccc';
-  const textColor = selected ? '#007AFF' : isDark ? '#ffffff' : '#333333';
-  const iconColor = isDark ? '#666' : '#bbb';
+  const borderColor = selected ? '#007AFF' : isDark ? '#3a3a3c' : '#d1d1d6';
+  const textColor = selected ? '#007AFF' : isDark ? '#ffffff' : '#1c1c1e';
+  const bgColor = isDark ? '#1c1c1e' : '#ffffff';
 
   const inner = (
-    <View style={[styles.container, { backgroundColor: bg, borderColor }]}>
-      {selected && <Text style={styles.checkmark}>✓</Text>}
-      <Text style={styles.icon}>📄</Text>
-      <Text style={[styles.text, { color: textColor }]}>P{pageNumber}</Text>
-      {selectable && !selected && (
-        <View style={[styles.selectCircle, { borderColor: iconColor }]} />
+    <View style={[styles.container, { backgroundColor: bgColor, borderColor }]}>
+      {selected && (
+        <View style={styles.checkBadge}>
+          <Text style={styles.checkmark}>✓</Text>
+        </View>
       )}
+      {selectable && !selected && (
+        <View style={[styles.selectCircle, { borderColor: isDark ? '#555' : '#bbb' }]} />
+      )}
+
+      <LinearGradient
+        colors={selected ? ['#007AFF22', '#007AFF11'] : isDark ? ['#2c2c2e', '#1c1c1e'] : ['#f2f2f7', '#e5e5ea']}
+        style={styles.docPreview}
+      >
+        <View style={[styles.docLine, { backgroundColor: selected ? '#007AFF55' : isDark ? '#48484a' : '#c7c7cc' }]} />
+        <View style={[styles.docLine, { backgroundColor: selected ? '#007AFF44' : isDark ? '#48484a' : '#c7c7cc', width: '70%' }]} />
+        <View style={[styles.docLine, { backgroundColor: selected ? '#007AFF33' : isDark ? '#48484a' : '#c7c7cc', width: '85%' }]} />
+        <View style={[styles.docLine, { backgroundColor: selected ? '#007AFF22' : isDark ? '#3a3a3c' : '#d1d1d6', width: '60%' }]} />
+      </LinearGradient>
+
+      <Text style={[styles.text, { color: textColor }]}>P{pageNumber}</Text>
     </View>
   );
 
@@ -49,37 +61,64 @@ const styles = StyleSheet.create({
   container: {
     width: 80,
     height: 110,
-    borderWidth: 2,
+    borderWidth: 1.5,
     justifyContent: 'center',
     alignItems: 'center',
     margin: 6,
-    borderRadius: 8,
+    borderRadius: 10,
     shadowColor: '#000',
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.08,
     shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
+    shadowRadius: 6,
     elevation: 3,
+    overflow: 'hidden',
   },
-  icon: { fontSize: 26, marginBottom: 4 },
+  docPreview: {
+    width: '78%',
+    height: 60,
+    borderRadius: 4,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    paddingHorizontal: 6,
+    paddingVertical: 8,
+    gap: 5,
+    marginBottom: 6,
+  },
+  docLine: {
+    width: '100%',
+    height: 4,
+    borderRadius: 2,
+  },
   text: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: '700',
+    letterSpacing: 0.3,
   },
-  checkmark: {
+  checkBadge: {
     position: 'absolute',
     top: 4,
-    right: 6,
-    fontSize: 14,
-    color: '#007AFF',
+    right: 4,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#007AFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  checkmark: {
+    fontSize: 10,
+    color: '#fff',
     fontWeight: 'bold',
   },
   selectCircle: {
     position: 'absolute',
     top: 4,
-    right: 6,
-    width: 16,
-    height: 16,
-    borderRadius: 8,
+    right: 4,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
     borderWidth: 1.5,
+    zIndex: 1,
   },
 });

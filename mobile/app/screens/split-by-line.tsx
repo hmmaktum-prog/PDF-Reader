@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, TextInput } from 'react-native';
 import ToolShell from '../components/ToolShell';
+import { getOutputPath, ensureOutputDir } from '../utils/outputPath';
 import { useAppTheme } from '../context/ThemeContext';
 import { splitPdf } from '../utils/nativeModules';
 import { pickSinglePdf } from '../utils/filePicker';
@@ -32,8 +33,8 @@ export default function SplitByLineScreen() {
   };
 
   const handleAction = async (onProgress: (pct: number, label?: string) => void) => {
-    if (!selectedFile) throw new Error('প্রথমে একটি PDF ফাইল নির্বাচন করুন');
-    const outputDir = '/storage/emulated/0/Download/PDFPowerTools/visual_split';
+    if (!selectedFile) throw new Error('Please select a PDF file first');
+    const outputDir = getOutputPath('visual_split');
     onProgress(15, 'Preparing document...');
     await new Promise(r => setTimeout(r, 500));
     onProgress(40, `Calculating split lines (${ratio}% ${axis})...`);

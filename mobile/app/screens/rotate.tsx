@@ -57,8 +57,8 @@ export default function RotateScreen() {
   };
 
   const handleRotate = async (onProgress: (pct: number, label?: string) => void) => {
-    if (!selectedFile) throw new Error('প্রথমে একটি PDF ফাইল নির্বাচন করুন');
-    const outputPath = '/storage/emulated/0/Download/PDFPowerTools/rotated_output.pdf';
+    if (!selectedFile) throw new Error('Please select a PDF file first');
+    const outputPath = getOutputPath('rotated_output.pdf');
     onProgress(15, 'Loading PDF with QPDF...');
     await new Promise(r => setTimeout(r, 300));
     onProgress(45, `Rotating pages ${angle}°...`);

@@ -37,8 +37,8 @@ export default function NupScreen() {
   const rows = isCustom ? (parseInt(customRows) || 1) : layout.rows;
 
   const handleAction = async (onProgress) => {
-    if (!selectedFile) throw new Error('প্রথমে একটি PDF ফাইল নির্বাচন করুন');
-    const outputPath = '/storage/emulated/0/Download/PDFPowerTools/nup_output.pdf';
+    if (!selectedFile) throw new Error('Please select a PDF file first');
+    const outputPath = getOutputPath('nup_output.pdf');
     onProgress(20, 'Loading PDF...');
     await new Promise(r => setTimeout(r, 300));
     onProgress(55, `Arranging ${cols}x${rows} pages (${sequence})...`);

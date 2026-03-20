@@ -4,6 +4,8 @@ import ToolShell from '../components/ToolShell';
 import { useAppTheme } from '../context/ThemeContext';
 import { AVAILABLE_MODELS, GeminiModel, OcrLanguage } from '../utils/geminiService';
 import { batchRenderPages } from '../utils/nativeModules';
+import { pickSinglePdf } from '../utils/filePicker';
+import { getOutputPath, ensureOutputDir } from '../utils/outputPath';
 
 const LANGUAGES = [
   { id: 'ben', label: 'বাংলা', flag: '🇧🇩' },
@@ -21,12 +23,24 @@ const OUTPUT_FORMATS = [
 export default function OcrScreen() {
   const { isDark } = useAppTheme();
   const [selectedFile, setSelectedFile] = useState('');
+  const [selectedFileName, setSelectedFileName] = useState('');
   const [language, setLanguage] = useState('ben');
   const [outputFormat, setOutputFormat] = useState('docx');
   const [useGemini, setUseGemini] = useState(true);
   const [selectedModel, setSelectedModel] = useState(AVAILABLE_MODELS[0].id);
   const [downloadedPacks, setDownloadedPacks] = useState<Record<string, boolean>>({ eng: true });
   const [downloadingPack, setDownloadingPack] = useState<string | null>(null);
+
+  const handlePickFile = async () => {
+    try {
+      const picked = await pickSinglePdf();
+      if (!picked) return;
+      setSelectedFile(picked.path);
+      setSelectedFileName(picked.name);
+    } catch (e: any) {
+      Alert.alert('File Picker Error', e.message);
+    }
+  };
 
   const handleDownloadPack = async (langId: string) => {
     setDownloadingPack(langId);
@@ -41,15 +55,16 @@ export default function OcrScreen() {
   const accent = '#34C759';
   const muted = isDark ? '#888' : '#999';
 
-  const handleOcr = async (onProgress) => {
-    if (!selectedFile) throw new Error('প্রথমে একটি PDF ফাইল নির্বাচন করুন');
+  const handleOcr = async (onProgress: (pct: number, label?: string) => void) => {
+    if (!selectedFile) throw new Error('Please select a PDF file first');
     if (!useGemini && !downloadedPacks[language]) {
-      throw new Error(`দয়া করে '${LANGUAGES.find(l=>l.id===language)?.label}' অফলাইন প্যাকটি ডাউনলোড করুন।`);
+      throw new Error(`Please download the '${LANGUAGES.find(l => l.id === language)?.label}' offline pack first.`);
     }
 
-    const outputDir = '/storage/emulated/0/Download/PDFPowerTools/ocr_output';
+    await ensureOutputDir();
+    const outputDir = (getOutputPath('ocr_output')).replace('ocr_output', '');
     onProgress(10, 'Rendering pages via MuPDF...');
-    await batchRenderPages(selectedFile, outputDir + '/pages', 'jpeg', 300);
+    await batchRenderPages(selectedFile, getOutputPath('ocr_pages'), 'jpeg', 300);
     onProgress(35, useGemini ? 'Sending to Gemini ' + selectedModel + '...' : 'Running PaddleOCR offline...');
     await new Promise(r => setTimeout(r, 1000));
     onProgress(65, 'Parsing OCR blocks...');
@@ -57,23 +72,38 @@ export default function OcrScreen() {
     onProgress(85, 'Generating ' + outputFormat + ' output...');
     await new Promise(r => setTimeout(r, 500));
     onProgress(100, 'OCR complete!');
-    return outputDir + '/result.' + (outputFormat === 'text' ? 'txt' : outputFormat === 'docx' ? 'docx' : 'json');
+    const ext = outputFormat === 'text' ? 'txt' : outputFormat === 'docx' ? 'docx' : 'json';
+    return getOutputPath('ocr_result.' + ext);
   };
 
   return (
     <ToolShell title="OCR" subtitle="Extract text from scanned PDFs" onExecute={handleOcr} executeLabel="🔍 Run OCR">
       <TouchableOpacity
         style={[styles.pickBtn, { backgroundColor: cardBg, borderColor: accent }]}
-        onPress={() => setSelectedFile('/mock/scanned_book.pdf')}
+        onPress={handlePickFile}
         testID="button-pick-file"
         activeOpacity={0.7}
       >
         <Text style={{ fontSize: 30, marginBottom: 6 }}>📁</Text>
         <Text style={[styles.pickText, { color: textColor }]}>
-          {selectedFile ? selectedFile.split('/').pop() : 'Select Scanned PDF'}
+          {selectedFileName || 'Select Scanned PDF'}
         </Text>
-        <Text style={{ color: muted, fontSize: 12 }}>MuPDF renders → OCR engine extracts text</Text>
+        <Text style={{ color: muted, fontSize: 12 }}>
+          {selectedFile ? 'Tap to change file' : 'MuPDF renders → OCR engine extracts text'}
+        </Text>
       </TouchableOpacity>
+
+      {!selectedFile && (
+        <View style={[styles.emptyHint, { backgroundColor: cardBg }]}>
+          <Text style={{ fontSize: 36, marginBottom: 8 }}>🔍</Text>
+          <Text style={{ color: textColor, fontWeight: '700', fontSize: 14, marginBottom: 4 }}>
+            No file selected
+          </Text>
+          <Text style={{ color: muted, fontSize: 12, textAlign: 'center', lineHeight: 18 }}>
+            Select a scanned PDF to extract text using AI or offline OCR
+          </Text>
+        </View>
+      )}
 
       <Text style={[styles.sectionLabel, { color: textColor, marginBottom: 10 }]}>🌐 Language</Text>
       <View style={styles.langRow}>
@@ -100,9 +130,9 @@ export default function OcrScreen() {
       {!useGemini && !downloadedPacks[language] && (
         <View style={[styles.downloadBanner, { backgroundColor: isDark ? '#331' : '#fff9c4', borderColor: isDark ? '#662' : '#ffe082' }]}>
           <Text style={{ flex: 1, color: textColor, fontSize: 13, lineHeight: 18 }}>
-            Offline OCR requires the <Text style={{fontWeight: 'bold'}}>{LANGUAGES.find(l=>l.id===language)?.label}</Text> pack (~15MB).
+            Offline OCR requires the <Text style={{ fontWeight: 'bold' }}>{LANGUAGES.find(l => l.id === language)?.label}</Text> pack (~15MB).
           </Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.downloadBtn, { backgroundColor: accent }]}
             onPress={() => handleDownloadPack(language)}
             disabled={downloadingPack === language}
@@ -154,6 +184,7 @@ export default function OcrScreen() {
 const styles = StyleSheet.create({
   pickBtn: { padding: 24, borderRadius: 14, alignItems: 'center', borderWidth: 2, borderStyle: 'dashed', marginBottom: 16 },
   pickText: { fontSize: 15, fontWeight: '700', marginBottom: 4 },
+  emptyHint: { borderRadius: 14, padding: 24, alignItems: 'center', marginBottom: 16 },
   sectionLabel: { fontSize: 15, fontWeight: '700' },
   langRow: { flexDirection: 'row', gap: 10, marginBottom: 14 },
   langCard: { flex: 1, padding: 10, borderRadius: 12, borderWidth: 2, alignItems: 'center' },

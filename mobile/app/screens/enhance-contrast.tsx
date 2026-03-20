@@ -15,8 +15,8 @@ export default function EnhanceContrastScreen() {
   const muted = isDark ? '#888' : '#777';
 
   const handleAction = async (onProgress) => {
-    if (!selectedFile) throw new Error('প্রথমে একটি PDF ফাইল নির্বাচন করুন');
-    const outputPath = '/storage/emulated/0/Download/PDFPowerTools/contrast_enhanced.pdf';
+    if (!selectedFile) throw new Error('Please select a PDF file first');
+    const outputPath = getOutputPath('contrast_enhanced.pdf');
     onProgress(15, 'Rendering pages via MuPDF...');
     await new Promise(r => setTimeout(r, 400));
     onProgress(50, 'Enhancing contrast...');

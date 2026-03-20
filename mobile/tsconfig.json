@@ -4,16 +4,25 @@
     "strict": false,
     "jsx": "react-native",
     "moduleResolution": "node",
-    "lib": ["es2015", "es2017", "dom"],
-    "types": ["jest"],
+    "lib": [
+      "es2015",
+      "es2017",
+      "dom"
+    ],
+    "types": [
+      "jest"
+    ],
     "paths": {
-      "@/*": ["./app/*"]
+      "@/*": [
+        "./app/*"
+      ]
     }
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.d.ts",
-    "expo-env.d.ts"
+    "expo-env.d.ts",
+    ".expo/types/**/*.ts"
   ]
 }

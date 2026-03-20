@@ -21,8 +21,8 @@ export default function FourUpBookletScreen() {
   const muted = isDark ? '#888' : '#999';
 
   const handleAction = async (onProgress) => {
-    if (!selectedFile) throw new Error('প্রথমে একটি PDF ফাইল নির্বাচন করুন');
-    const outputPath = '/storage/emulated/0/Download/PDFPowerTools/4up_booklet_output.pdf';
+    if (!selectedFile) throw new Error('Please select a PDF file first');
+    const outputPath = getOutputPath('4up_booklet_output.pdf');
     onProgress(20, 'Analyzing pages...');
     await new Promise(r => setTimeout(r, 400));
     onProgress(55, 'Arranging 4 pages per sheet...');

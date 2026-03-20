@@ -12,6 +12,7 @@ import { useAppTheme } from '../context/ThemeContext';
 import { mergePdfs } from '../utils/nativeModules';
 import { useContinueTool } from '../context/ContinueContext';
 import { pickMultiplePdfs } from '../utils/filePicker';
+import { getOutputPath, ensureOutputDir } from '../utils/outputPath';
 import DraggableFlatList, { ScaleDecorator, RenderItemParams } from 'react-native-draggable-flatlist';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
@@ -83,8 +84,9 @@ export default function MergeScreen() {
   };
 
   const handleMerge = async (onProgress: (pct: number, label?: string) => void) => {
-    if (files.length < 2) throw new Error('কমপক্ষে ২টি PDF ফাইল নির্বাচন করুন');
-    const outputPath = '/storage/emulated/0/Download/PDFPowerTools/merged_output.pdf';
+    if (files.length < 2) throw new Error('Please select at least 2 PDF files to merge');
+    await ensureOutputDir();
+    const outputPath = getOutputPath('merged_output.pdf');
     onProgress(10, 'Validating input files...');
     await new Promise(r => setTimeout(r, 300));
     onProgress(30, 'Loading PDF documents via QPDF...');
@@ -102,7 +104,15 @@ export default function MergeScreen() {
     const index = getIndex() || 0;
     return (
       <ScaleDecorator>
-        <View style={[styles.fileItem, { backgroundColor: isActive ? (isDark ? '#333' : '#dcdcdc') : cardBg, borderColor, elevation: isActive ? 10 : 0 }]}>
+        <View style={[styles.fileItem, {
+          backgroundColor: isActive ? (isDark ? '#2a3050' : '#e8f0ff') : cardBg,
+          borderColor: isActive ? accent : borderColor,
+          elevation: isActive ? 16 : 0,
+          shadowColor: isActive ? accent : '#000',
+          shadowOpacity: isActive ? 0.3 : 0,
+          shadowOffset: { width: 0, height: isActive ? 8 : 0 },
+          shadowRadius: isActive ? 16 : 0,
+        }]}>
           <TouchableOpacity onLongPress={drag} delayLongPress={150} style={styles.dragHandle} activeOpacity={0.7}>
             <Text style={{ fontSize: 20, color: muted }}>☰</Text>
           </TouchableOpacity>

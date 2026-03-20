@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, Switch } from 'react-native';
 import ToolShell from '../components/ToolShell';
+import { getOutputPath, ensureOutputDir } from '../utils/outputPath';
 import { useAppTheme } from '../context/ThemeContext';
 import { batchRenderPages } from '../utils/nativeModules';
 import { pickSinglePdf } from '../utils/filePicker';
@@ -31,10 +32,10 @@ export default function PdfToImageScreen() {
   };
 
   const handleAction = async (onProgress: (pct: number, label?: string) => void) => {
-    if (!selectedFile) throw new Error('প্রথমে একটি PDF ফাইল নির্বাচন করুন');
+    if (!selectedFile) throw new Error('Please select a PDF file first');
     const outPath = outputMode === 'zip' 
-      ? '/storage/emulated/0/Download/PDFPowerTools/images.zip' 
-      : '/storage/emulated/0/Download/PDFPowerTools/images_new.pdf';
+      ? getOutputPath('images.zip') 
+      : getOutputPath('images_new.pdf');
 
     onProgress(10, 'Loading PDF...');
     await new Promise(r => setTimeout(r, 300));

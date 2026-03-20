@@ -4,6 +4,7 @@ import ToolShell from '../components/ToolShell';
 import { useAppTheme } from '../context/ThemeContext';
 import { reorderPages } from '../utils/nativeModules';
 import { pickSinglePdf } from '../utils/filePicker';
+import { getOutputPath, ensureOutputDir } from '../utils/outputPath';
 import DraggableFlatList, { ScaleDecorator, RenderItemParams } from 'react-native-draggable-flatlist';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
@@ -48,8 +49,9 @@ export default function OrganizeScreen() {
   };
 
   const handleOrganize = async (onProgress: (pct: number, label?: string) => void) => {
-    if (!selectedFile) throw new Error('প্রথমে একটি PDF ফাইল নির্বাচন করুন');
-    const outputPath = '/storage/emulated/0/Download/PDFPowerTools/organized_output.pdf';
+    if (!selectedFile) throw new Error('Please select a PDF file first');
+    await ensureOutputDir();
+    const outputPath = getOutputPath('organized_output.pdf');
     onProgress(20, 'Loading PDF...');
     await new Promise(r => setTimeout(r, 300));
     onProgress(55, 'Reordering pages with QPDF...');
@@ -64,7 +66,15 @@ export default function OrganizeScreen() {
     const index = getIndex() || 0;
     return (
       <ScaleDecorator>
-        <View style={[styles.pageRow, { backgroundColor: isActive ? (isDark ? '#333' : '#dcdcdc') : cardBg, borderColor, elevation: isActive ? 10 : 0 }]}>
+        <View style={[styles.pageRow, {
+          backgroundColor: isActive ? (isDark ? '#1a2a50' : '#e8f0ff') : cardBg,
+          borderColor: isActive ? accent : borderColor,
+          elevation: isActive ? 16 : 0,
+          shadowColor: isActive ? accent : '#000',
+          shadowOpacity: isActive ? 0.3 : 0,
+          shadowOffset: { width: 0, height: isActive ? 8 : 0 },
+          shadowRadius: isActive ? 16 : 0,
+        }]}>
           <TouchableOpacity onLongPress={drag} delayLongPress={150} style={styles.dragHandle} activeOpacity={0.7}>
             <Text style={{ fontSize: 20, color: muted }}>☰</Text>
           </TouchableOpacity>

@@ -47,8 +47,8 @@ export default function GrayscaleScreen() {
   };
 
   const handleAction = async (onProgress) => {
-    if (!selectedFile) throw new Error('প্রথমে একটি PDF ফাইল নির্বাচন করুন');
-    const outputPath = '/storage/emulated/0/Download/PDFPowerTools/grayscale_output.pdf';
+    if (!selectedFile) throw new Error('Please select a PDF file first');
+    const outputPath = getOutputPath('grayscale_output.pdf');
     onProgress(20, 'Rendering via MuPDF...');
     await new Promise(r => setTimeout(r, 500));
     onProgress(55, 'Converting to grayscale...');

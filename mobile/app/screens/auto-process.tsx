@@ -71,8 +71,8 @@ export default function AutoProcessScreen() {
   };
 
   const handleAction = async (onProgress: (pct: number, label?: string) => void) => {
-    if (!selectedFile) throw new Error('প্রথমে একটি PDF ফাইল নির্বাচন করুন');
-    const outputPath = '/storage/emulated/0/Download/PDFPowerTools/auto_processed.pdf';
+    if (!selectedFile) throw new Error('Please select a PDF file first');
+    const outputPath = getOutputPath('auto_processed.pdf');
     const activeSteps = steps.filter(s => enabled[s.id]);
     if (activeSteps.length === 0) throw new Error('অন্তত ১টি ধাপ সক্রিয় রাখুন');
     
