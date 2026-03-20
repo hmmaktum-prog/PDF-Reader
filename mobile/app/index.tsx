@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -8,29 +8,42 @@ import {
   StatusBar,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme } from './context/ThemeContext';
 import { useContinueTool } from './context/ContinueContext';
 import * as Haptics from 'expo-haptics';
 
 const QUICK_TOOLS = [
-  { id: 'merge', name: 'Merge', icon: '🔗', route: '/screens/merge', color: '#007AFF' },
-  { id: 'split', name: 'Split', icon: '✂️', route: '/screens/split', color: '#FF9500' },
-  { id: 'compress', name: 'Compress', icon: '📦', route: '/screens/compress', color: '#34C759' },
-  { id: 'ocr', name: 'AI OCR', icon: '🤖', route: '/screens/ocr', color: '#AF52DE' },
-  { id: 'image-to-pdf', name: 'Img→PDF', icon: '🖼️', route: '/screens/image-to-pdf', color: '#FF2D55' },
-  { id: 'rotate', name: 'Rotate', icon: '🔄', route: '/screens/rotate', color: '#5AC8FA' },
+  { id: 'merge',        name: 'Merge',      icon: '🔗', route: '/screens/merge',        color: '#007AFF' },
+  { id: 'split',        name: 'Split',       icon: '✂️', route: '/screens/split',        color: '#FF9500' },
+  { id: 'compress',     name: 'Compress',    icon: '📦', route: '/screens/compress',     color: '#34C759' },
+  { id: 'ocr',          name: 'AI OCR',      icon: '🤖', route: '/screens/ocr',          color: '#AF52DE' },
+  { id: 'image-to-pdf', name: 'Img→PDF',     icon: '🖼️', route: '/screens/image-to-pdf', color: '#FF2D55' },
+  { id: 'rotate',       name: 'Rotate',      icon: '🔄', route: '/screens/rotate',       color: '#5AC8FA' },
+  { id: 'invert',       name: 'Dark Mode',   icon: '🌗', route: '/screens/invert',       color: '#FF6B35' },
+  { id: 'organize',     name: 'Organize',    icon: '📋', route: '/screens/organize',     color: '#32ADE6' },
+];
+
+const STATS = [
+  { num: '20+', label: 'Tools',   icon: '🛠️' },
+  { num: 'NDK', label: 'Engine',  icon: '⚡' },
+  { num: 'AI',  label: 'OCR',     icon: '🤖' },
+  { num: '0',   label: 'Upload',  icon: '📴' },
 ];
 
 export default function HomeScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { isDark, theme, setTheme } = useAppTheme();
   const { sharedFilePath, clearState } = useContinueTool();
 
-  const bg = isDark ? '#0d0d0d' : '#f2f2f7';
-  const cardBg = isDark ? '#1c1c1e' : '#ffffff';
-  const textColor = isDark ? '#ffffff' : '#000000';
-  const muted = isDark ? '#8e8e93' : '#6c6c70';
-  const accent = '#007AFF';
+  const bg       = isDark ? '#000000' : '#f2f2f7';
+  const cardBg   = isDark ? '#1c1c1e' : '#ffffff';
+  const cardBg2  = isDark ? '#2c2c2e' : '#f8f8fc';
+  const text     = isDark ? '#ffffff' : '#000000';
+  const muted    = isDark ? '#8e8e93' : '#6c6c70';
+  const accent   = '#007AFF';
+  const border   = isDark ? '#38383a' : '#e5e5ea';
 
   const cycleTheme = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -43,101 +56,82 @@ export default function HomeScreen() {
 
   return (
     <View style={[styles.root, { backgroundColor: bg }]}>
-      <StatusBar
-        barStyle={isDark ? 'light-content' : 'dark-content'}
-        backgroundColor={bg}
-      />
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor="transparent" translucent />
+
       <ScrollView
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={[styles.scroll, { paddingTop: insets.top, paddingBottom: insets.bottom + 24 }]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Hero Header */}
-        <View style={[styles.heroCard, { backgroundColor: accent }]}>
-          <TouchableOpacity style={styles.themeToggle} onPress={cycleTheme} testID="button-theme-toggle">
-            <Text style={styles.themeIcon}>{themeIcon}</Text>
+        {/* Hero */}
+        <View style={[styles.hero, { backgroundColor: accent }]}>
+          <TouchableOpacity style={styles.themeBtn} onPress={cycleTheme} testID="button-theme-toggle">
+            <Text style={styles.themeBtnText}>{themeIcon}</Text>
           </TouchableOpacity>
-          <Text style={styles.heroTitle}>PDF Power Tools</Text>
-          <Text style={styles.heroSub}>Offline QPDF + MuPDF NDK Engine</Text>
-          <View style={styles.heroTags}>
-            <View style={styles.tag}><Text style={styles.tagText}>⚡ Ultra Fast</Text></View>
-            <View style={styles.tag}><Text style={styles.tagText}>📴 Offline First</Text></View>
-            <View style={styles.tag}><Text style={styles.tagText}>🔒 Privacy Safe</Text></View>
+
+          <View style={styles.heroLogoRow}>
+            <Text style={styles.heroLogo}>📑</Text>
+            <View style={{ marginLeft: 12 }}>
+              <Text style={styles.heroTitle}>PDF Power Tools</Text>
+              <Text style={styles.heroSub}>NDK Engine · Fully Offline</Text>
+            </View>
+          </View>
+
+          <View style={styles.tagRow}>
+            {['⚡ Ultra Fast', '📴 100% Offline', '🔒 No Upload'].map(t => (
+              <View key={t} style={styles.tag}>
+                <Text style={styles.tagText}>{t}</Text>
+              </View>
+            ))}
           </View>
         </View>
 
-        {/* Shared File Banner */}
+        {/* Continue Banner */}
         {sharedFilePath && (
-          <View style={[styles.continueBanner, { backgroundColor: '#FF950020', borderColor: '#FF9500' }]}>
+          <View style={[styles.banner, { backgroundColor: isDark ? '#FF950015' : '#FFF3E0', borderColor: '#FF9500' }]}>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: '#FF9500', fontWeight: '700', fontSize: 13 }}>
-                ➡️ Continuing from previous tool
-              </Text>
-              <Text style={{ color: muted, fontSize: 11, marginTop: 2 }} numberOfLines={1}>
-                {sharedFilePath}
-              </Text>
+              <Text style={styles.bannerTitle}>➡️ Continue from previous tool</Text>
+              <Text style={[styles.bannerSub, { color: muted }]} numberOfLines={1}>{sharedFilePath}</Text>
             </View>
-            <TouchableOpacity onPress={clearState} testID="button-clear-continue">
-              <Text style={{ color: '#FF3B30', fontWeight: '600', fontSize: 13 }}>✕ Clear</Text>
+            <TouchableOpacity onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); clearState(); }} testID="button-clear-continue">
+              <Text style={styles.bannerClear}>✕</Text>
             </TouchableOpacity>
           </View>
         )}
 
-        {/* PDF Viewer Placeholder */}
-        <View style={[styles.viewerCard, { backgroundColor: cardBg }]}>
-          <View style={styles.viewerHeader}>
-            <Text style={[styles.sectionTitle, { color: textColor }]}>📄 PDF Viewer</Text>
-            <TouchableOpacity
-              style={[styles.uploadBtn, { backgroundColor: accent }]}
-              testID="button-upload-pdf"
-            >
-              <Text style={styles.uploadBtnText}>+ Open PDF</Text>
+        {/* Quick Access */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, { color: text }]}>⚡ Quick Access</Text>
+            <TouchableOpacity onPress={() => router.push('/tools')}>
+              <Text style={[styles.seeAll, { color: accent }]}>See All →</Text>
             </TouchableOpacity>
           </View>
-          <View style={[styles.viewerArea, { backgroundColor: isDark ? '#2c2c2e' : '#f0f0f5' }]}>
-            <Text style={{ fontSize: 48 }}>📑</Text>
-            <Text style={[styles.viewerHint, { color: muted }]}>
-              MuPDF C++ Renderer
-            </Text>
-            <Text style={[styles.viewerSub, { color: isDark ? '#555' : '#bbb' }]}>
-              Tap "Open PDF" to preview instantly offline.{'\n'}
-              High-res rendering at 300 DPI.
-            </Text>
+
+          <View style={styles.grid}>
+            {QUICK_TOOLS.map(tool => (
+              <TouchableOpacity
+                key={tool.id}
+                style={[styles.gridCard, { backgroundColor: cardBg }]}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  router.push(tool.route as any);
+                }}
+                activeOpacity={0.7}
+                testID={`button-quick-${tool.id}`}
+              >
+                <View style={[styles.gridIconBg, { backgroundColor: tool.color + '20' }]}>
+                  <Text style={styles.gridIcon}>{tool.icon}</Text>
+                </View>
+                <Text style={[styles.gridLabel, { color: text }]}>{tool.name}</Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
 
-        {/* Quick Access Tools */}
-        <Text style={[styles.sectionTitle, { color: textColor, marginBottom: 12, paddingHorizontal: 4 }]}>
-          ⚡ Quick Access
-        </Text>
-        <View style={styles.quickGrid}>
-          {QUICK_TOOLS.map(tool => (
-            <TouchableOpacity
-              key={tool.id}
-              style={[styles.quickCard, { backgroundColor: cardBg }]}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                router.push(tool.route as any);
-              }}
-              activeOpacity={0.75}
-              testID={`button-quick-${tool.id}`}
-            >
-              <View style={[styles.quickIconBg, { backgroundColor: tool.color + '22' }]}>
-                <Text style={styles.quickIcon}>{tool.icon}</Text>
-              </View>
-              <Text style={[styles.quickLabel, { color: textColor }]}>{tool.name}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Stats */}
+        {/* Stats Row */}
         <View style={styles.statsRow}>
-          {[
-            { num: '20+', label: 'Tools', icon: '🛠️' },
-            { num: 'NDK', label: 'Engine', icon: '⚡' },
-            { num: 'AI', label: 'OCR', icon: '🤖' },
-            { num: '100%', label: 'Offline', icon: '📴' },
-          ].map(s => (
-            <View key={s.label} style={[styles.statCard, { backgroundColor: cardBg }]}>
+          {STATS.map(s => (
+            <View key={s.label} style={[styles.statCard, { backgroundColor: cardBg, borderColor: border }]}>
               <Text style={styles.statIcon}>{s.icon}</Text>
               <Text style={[styles.statNum, { color: accent }]}>{s.num}</Text>
               <Text style={[styles.statLabel, { color: muted }]}>{s.label}</Text>
@@ -145,14 +139,31 @@ export default function HomeScreen() {
           ))}
         </View>
 
-        {/* View All Tools Button */}
+        {/* PDF Viewer Card */}
+        <View style={[styles.viewerCard, { backgroundColor: cardBg, borderColor: border }]}>
+          <View style={styles.viewerTop}>
+            <Text style={[styles.sectionTitle, { color: text }]}>📄 PDF Viewer</Text>
+            <TouchableOpacity style={[styles.openBtn, { backgroundColor: accent }]} testID="button-upload-pdf">
+              <Text style={styles.openBtnText}>Open PDF</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={[styles.viewerArea, { backgroundColor: isDark ? '#2c2c2e' : '#f2f2f7' }]}>
+            <Text style={{ fontSize: 44 }}>📑</Text>
+            <Text style={[styles.viewerHint, { color: muted }]}>MuPDF · 300 DPI Renderer</Text>
+            <Text style={[styles.viewerSub, { color: isDark ? '#555' : '#aaa' }]}>
+              Open a PDF to preview instantly — fully offline.
+            </Text>
+          </View>
+        </View>
+
+        {/* View All Button */}
         <TouchableOpacity
-          style={[styles.allToolsBtn, { backgroundColor: accent }]}
-          onPress={() => router.push('/tools')}
+          style={[styles.allBtn, { backgroundColor: accent }]}
+          onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); router.push('/tools'); }}
           activeOpacity={0.85}
           testID="button-view-all-tools"
         >
-          <Text style={styles.allToolsBtnText}>View All 20+ Tools →</Text>
+          <Text style={styles.allBtnText}>Browse All 20+ Tools  →</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -160,127 +171,91 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1 },
-  scroll: { paddingBottom: 32 },
-  heroCard: {
-    margin: 16,
-    borderRadius: 20,
-    padding: 24,
+  root:  { flex: 1 },
+  scroll: { flexGrow: 1 },
+
+  hero: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    borderRadius: 22,
+    padding: 22,
     paddingBottom: 20,
+    elevation: 6,
     shadowColor: '#007AFF',
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.35,
     shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 12,
-    elevation: 8,
+    shadowRadius: 14,
   },
-  themeToggle: {
-    position: 'absolute',
-    top: 14,
-    right: 14,
-    padding: 6,
-    borderRadius: 20,
-    backgroundColor: '#ffffff30',
+  themeBtn: {
+    position: 'absolute', top: 14, right: 14,
+    backgroundColor: '#ffffff28',
+    borderRadius: 20, padding: 7,
   },
-  themeIcon: { fontSize: 18 },
-  heroTitle: { fontSize: 28, fontWeight: 'bold', color: '#fff', marginBottom: 4 },
-  heroSub: { fontSize: 13, color: '#ffffffcc', marginBottom: 14 },
-  heroTags: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
-  tag: { backgroundColor: '#ffffff25', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
-  tagText: { color: '#fff', fontSize: 12, fontWeight: '600' },
-  continueBanner: {
-    marginHorizontal: 16,
-    marginBottom: 8,
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
+  themeBtnText: { fontSize: 17 },
+  heroLogoRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16, marginTop: 4 },
+  heroLogo:  { fontSize: 40 },
+  heroTitle: { fontSize: 24, fontWeight: '800', color: '#fff', letterSpacing: -0.5 },
+  heroSub:   { fontSize: 12, color: '#ffffffbb', marginTop: 2 },
+  tagRow:    { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  tag:       { backgroundColor: '#ffffff22', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
+  tagText:   { color: '#fff', fontSize: 11, fontWeight: '600' },
+
+  banner: {
+    marginHorizontal: 16, marginTop: 12,
+    padding: 12, borderRadius: 12, borderWidth: 1,
+    flexDirection: 'row', alignItems: 'center', gap: 10,
   },
-  viewerCard: {
-    marginHorizontal: 16,
-    marginBottom: 20,
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  viewerHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  viewerArea: {
-    height: 200,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  viewerHint: { fontSize: 14, fontWeight: '600', marginTop: 10 },
-  viewerSub: { fontSize: 12, marginTop: 6, textAlign: 'center', lineHeight: 18 },
-  uploadBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20 },
-  uploadBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
-  sectionTitle: { fontSize: 17, fontWeight: '700' },
-  quickGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: 12,
-    marginBottom: 20,
-    gap: 8,
-  },
-  quickCard: {
-    width: '30%',
-    padding: 14,
-    borderRadius: 14,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 6,
+  bannerTitle: { color: '#FF9500', fontWeight: '700', fontSize: 13 },
+  bannerSub:   { fontSize: 11, marginTop: 2 },
+  bannerClear: { color: '#FF3B30', fontWeight: '700', fontSize: 18, paddingHorizontal: 6 },
+
+  section: { marginTop: 24, paddingHorizontal: 16 },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
+  sectionTitle:  { fontSize: 17, fontWeight: '700' },
+  seeAll:        { fontSize: 14, fontWeight: '600' },
+
+  grid:     { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  gridCard: {
+    width: '22.5%',
+    paddingVertical: 14, paddingHorizontal: 4,
+    borderRadius: 16, alignItems: 'center',
     elevation: 2,
+    shadowColor: '#000', shadowOpacity: 0.06,
+    shadowOffset: { width: 0, height: 2 }, shadowRadius: 6,
   },
-  quickIconBg: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  quickIcon: { fontSize: 22 },
-  quickLabel: { fontSize: 12, fontWeight: '600', textAlign: 'center' },
+  gridIconBg: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
+  gridIcon:   { fontSize: 22 },
+  gridLabel:  { fontSize: 11, fontWeight: '600', textAlign: 'center' },
+
   statsRow: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    gap: 8,
-    marginBottom: 20,
+    flexDirection: 'row', marginHorizontal: 16, marginTop: 20, gap: 10,
   },
   statCard: {
-    flex: 1,
-    padding: 12,
-    borderRadius: 12,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
+    flex: 1, alignItems: 'center', paddingVertical: 14,
+    borderRadius: 14, borderWidth: 1,
+    elevation: 1,
+    shadowColor: '#000', shadowOpacity: 0.04, shadowOffset: { width: 0, height: 1 }, shadowRadius: 4,
   },
-  statIcon: { fontSize: 20, marginBottom: 4 },
-  statNum: { fontSize: 15, fontWeight: 'bold' },
-  statLabel: { fontSize: 11, marginTop: 2 },
-  allToolsBtn: {
-    marginHorizontal: 16,
-    padding: 16,
-    borderRadius: 14,
-    alignItems: 'center',
-    shadowColor: '#007AFF',
-    shadowOpacity: 0.25,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 5,
+  statIcon:  { fontSize: 18, marginBottom: 4 },
+  statNum:   { fontSize: 15, fontWeight: '800' },
+  statLabel: { fontSize: 10, marginTop: 2 },
+
+  viewerCard: {
+    marginHorizontal: 16, marginTop: 20,
+    borderRadius: 18, padding: 16, borderWidth: 1,
+    elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowOffset: { width: 0, height: 3 }, shadowRadius: 8,
   },
-  allToolsBtnText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  viewerTop:  { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  openBtn:    { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
+  openBtnText:{ color: '#fff', fontWeight: '700', fontSize: 13 },
+  viewerArea: { height: 180, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+  viewerHint: { fontSize: 13, fontWeight: '600', marginTop: 10 },
+  viewerSub:  { fontSize: 12, marginTop: 5, textAlign: 'center', lineHeight: 18, paddingHorizontal: 20 },
+
+  allBtn: {
+    marginHorizontal: 16, marginTop: 20,
+    paddingVertical: 16, borderRadius: 16, alignItems: 'center',
+    elevation: 4, shadowColor: '#007AFF', shadowOpacity: 0.3, shadowOffset: { width: 0, height: 4 }, shadowRadius: 10,
+  },
+  allBtnText: { color: '#fff', fontSize: 16, fontWeight: '800', letterSpacing: 0.3 },
 });
