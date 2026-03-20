@@ -24,8 +24,7 @@ jobs:
           version: 9
 
       - name: Install dependencies
-        working-directory: ./mobile
-        run: pnpm install
+        run: pnpm install --shamefully-hoist
 
       - name: Install EAS CLI
         run: npm install -g eas-cli
