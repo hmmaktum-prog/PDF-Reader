@@ -23,14 +23,16 @@ jobs:
         with:
           version: 9
 
-      - name: Install dependencies
-        run: pnpm install --shamefully-hoist
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Install EAS CLI
-        run: npm install -g eas-cli
+      - name: Install dependencies
+        working-directory: ./mobile
+        run: pnpm install --shamefully-hoist
 
       - name: Build Android APK with EAS
         working-directory: ./mobile
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: eas build --platform android --profile production --non-interactive
