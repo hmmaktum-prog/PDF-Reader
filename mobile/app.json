@@ -25,10 +25,7 @@
         "backgroundColor": "#007AFF"
       },
       "package": "com.pdfpowertools.app",
-      "versionCode": 1,
-      "compileSdkVersion": 35,
-      "targetSdkVersion": 34,
-      "minSdkVersion": 24
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png"
