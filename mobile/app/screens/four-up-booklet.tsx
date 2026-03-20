@@ -5,6 +5,11 @@ import { useAppTheme } from '../context/ThemeContext';
 import { fourUpBooklet } from '../utils/nativeModules';
 import { getFourUpBookletChunks } from '../utils/fourUpBooklet';
 
+const ORIENTATIONS = [
+  { id: 'landscape', label: '🌄 Landscape', hint: 'Wider pages, horizontal layout' },
+  { id: 'portrait', label: '🖼️ Portrait', hint: 'Taller pages, vertical layout' },
+];
+
 export default function FourUpBookletScreen() {
   const { isDark } = useAppTheme();
   const [selectedFile, setSelectedFile] = useState('');
@@ -50,7 +55,8 @@ export default function FourUpBookletScreen() {
           4 pages are arranged on each sheet in booklet order. Print double-sided, then fold and cut to create a compact booklet. Ideal for handouts and study guides.
         </Text>
       </View>
-      <View style={[styles.infoBox, { backgroundColor: cardBg }]}> 
+
+      <View style={[styles.infoBox, { backgroundColor: cardBg }]}>
         <Text style={[styles.sectionLabel, { color: textColor, marginBottom: 6 }]}>🔢 Example 4-Up Spread (8 pages)</Text>
         {getFourUpBookletChunks(8).map((chunk, idx) => (
           <Text key={idx} style={{ color: muted, fontSize: 12, marginBottom: 2 }}>
@@ -58,6 +64,9 @@ export default function FourUpBookletScreen() {
           </Text>
         ))}
       </View>
+
+      <View style={styles.orientRow}>
+        {ORIENTATIONS.map((o) => (
           <TouchableOpacity
             key={o.id}
             style={[styles.orientCard, { backgroundColor: cardBg, borderColor: orientation === o.id ? accent : isDark ? '#444' : '#ccc' }, orientation === o.id && { backgroundColor: accent + '22' }]}
