@@ -1,6 +1,6 @@
 const { withAppBuildGradle, createRunOncePlugin } = require('@expo/config-plugins');
 
-const pkg = require('./package.json');
+const pkg = require('../package.json');
 
 /**
  * Adds CMake external native build configuration to android/app/build.gradle.
