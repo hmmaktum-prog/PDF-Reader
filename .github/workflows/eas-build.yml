@@ -3,60 +3,35 @@ name: Build APK with EAS
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   eas-build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v3
         with:
           version: 9
 
-      - name: Create .npmrc for Expo private registry (optional)
-        if: github.event_name != 'pull_request'
-        run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
-
       - name: Install dependencies
         working-directory: ./mobile
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
 
-      - name: Install eas-cli
-        working-directory: ./mobile
-        run: pnpm exec npm install -g eas-cli
+      - name: Install EAS CLI
+        run: npm install -g eas-cli
 
-      - name: Login to EAS
-        working-directory: ./mobile
-        env:
-          EAS_TOKEN: ${{ secrets.EAS_TOKEN }}
-        run: |
-          echo "$EAS_TOKEN" | eas login --token
-
-      - name: Validate app.json
-        working-directory: ./mobile
-        run: npx expo config --type public
-
-      - name: Run EAS build for Android APK
+      - name: Build Android APK with EAS
         working-directory: ./mobile
         env:
-          EAS_TOKEN: ${{ secrets.EAS_TOKEN }}
-        run: eas build --platform android --profile production --non-interactive --output-type apk
-
-      - name: Upload APK artifact
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-apk
-          path: ./mobile/dist/*
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: eas build --platform android --profile production --non-interactive
