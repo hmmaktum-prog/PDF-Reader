@@ -9,8 +9,8 @@
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#007AFF"
+      "resizeMode": "cover",
+      "backgroundColor": "#0a1628"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -22,7 +22,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#007AFF"
+        "backgroundColor": "#0d2760"
       },
       "package": "com.pdfpowertools.app",
       "versionCode": 1
