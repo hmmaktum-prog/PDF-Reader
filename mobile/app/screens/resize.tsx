@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, TextInput, ScrollView } from 'react-native';
 import ToolShell from '../components/ToolShell';
 import { useAppTheme } from '../context/ThemeContext';
 import { resizePdf } from '../utils/nativeModules';
@@ -17,6 +17,12 @@ export default function ResizeScreen() {
   const [targetSize, setTargetSize] = useState(PAGE_SIZES[0]);
   const [customW, setCustomW] = useState('595');
   const [customH, setCustomH] = useState('842');
+  
+  // New features
+  const [scale, setScale] = useState('100');
+  const [alignH, setAlignH] = useState<'left'|'center'|'right'>('center');
+  const [alignV, setAlignV] = useState<'top'|'middle'|'bottom'>('middle');
+
   const [selectedFile, setSelectedFile] = useState('');
 
   const textColor = isDark ? '#fff' : '#000';
@@ -33,20 +39,32 @@ export default function ResizeScreen() {
     const h = targetSize.id === 'Custom' ? parseInt(customH) : targetSize.h;
     onProgress(20, 'Loading PDF with QPDF...');
     await new Promise(r => setTimeout(r, 300));
-    onProgress(55, 'Resizing page dimensions...');
-    await resizePdf(selectedFile, outputPath, w, h);
+    onProgress(55, `Resizing pages (Scale: ${scale}%, Align: ${alignH}/${alignV})...`);
+    // Pass alignment and scale to the native module
+    await resizePdf(selectedFile, outputPath, w, h, parseInt(scale), alignH, alignV);
     onProgress(85, 'Writing output...');
     await new Promise(r => setTimeout(r, 300));
     onProgress(100, 'Done!');
     return outputPath;
   };
 
+  const ALIGNMENT_H = [
+    { id: 'left', icon: '⇤' },
+    { id: 'center', icon: '⇹' },
+    { id: 'right', icon: '⇥' }
+  ] as const;
+  
+  const ALIGNMENT_V = [
+    { id: 'top', icon: '⇡' },
+    { id: 'middle', icon: '↕' },
+    { id: 'bottom', icon: '⇣' }
+  ] as const;
+
   return (
-    <ToolShell title="Resize PDF" subtitle="Change page dimensions" onExecute={handleAction} executeLabel="📐 Resize Pages">
+    <ToolShell title="Resize Pages" subtitle="Change page dimensions and scale" onExecute={handleAction} executeLabel="📐 Resize Pages">
       <TouchableOpacity
         style={[styles.pickBtn, { backgroundColor: cardBg, borderColor: accent }]}
         onPress={() => setSelectedFile('/mock/document.pdf')}
-        testID="button-pick-file"
         activeOpacity={0.7}
       >
         <Text style={{ fontSize: 30, marginBottom: 6 }}>📁</Text>
@@ -72,44 +90,76 @@ export default function ResizeScreen() {
 
       {targetSize.id === 'Custom' && (
         <View style={[styles.customBox, { backgroundColor: cardBg }]}>
-          <Text style={[styles.sectionLabel, { color: textColor, marginBottom: 10 }]}>Custom Dimensions (pts)</Text>
+          <Text style={[styles.sectionLabel, { color: textColor, marginBottom: 10, fontSize: 14 }]}>Custom Dimensions (pts)</Text>
           <View style={{ flexDirection: 'row', gap: 12 }}>
             <View style={{ flex: 1 }}>
               <Text style={{ color: muted, fontSize: 12, marginBottom: 4 }}>Width</Text>
-              <TextInput
-                style={[styles.input, { backgroundColor: inputBg, color: textColor, borderColor }]}
-                value={customW}
-                onChangeText={setCustomW}
-                keyboardType="number-pad"
-                placeholder="595"
-                placeholderTextColor={muted}
-              />
+              <TextInput style={[styles.input, { backgroundColor: inputBg, color: textColor, borderColor }]} value={customW} onChangeText={setCustomW} keyboardType="number-pad" />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={{ color: muted, fontSize: 12, marginBottom: 4 }}>Height</Text>
-              <TextInput
-                style={[styles.input, { backgroundColor: inputBg, color: textColor, borderColor }]}
-                value={customH}
-                onChangeText={setCustomH}
-                keyboardType="number-pad"
-                placeholder="842"
-                placeholderTextColor={muted}
-              />
+              <TextInput style={[styles.input, { backgroundColor: inputBg, color: textColor, borderColor }]} value={customH} onChangeText={setCustomH} keyboardType="number-pad" />
             </View>
           </View>
-          <Text style={{ color: muted, fontSize: 11, marginTop: 8 }}>1 pt = 1/72 inch. A4 = 595×842 pts</Text>
         </View>
       )}
+
+      <Text style={[styles.sectionLabel, { color: textColor, marginBottom: 10, marginTop: 12 }]}>🔍 Content Scale (%)</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+        <TextInput
+          style={[styles.input, { backgroundColor: inputBg, color: textColor, borderColor, flex: 1, marginRight: 12 }]}
+          value={scale}
+          onChangeText={setScale}
+          keyboardType="number-pad"
+          placeholder="100"
+          placeholderTextColor={muted}
+        />
+        <Text style={{ color: muted, fontSize: 12, flex: 1 }}>
+          10-200%. 100% preserves original size on the new page canvas.
+        </Text>
+      </View>
+
+      <Text style={[styles.sectionLabel, { color: textColor, marginBottom: 10 }]}>📏 Content Alignment</Text>
+      <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
+        <View style={{ flex: 1 }}>
+          <Text style={{ color: muted, fontSize: 12, marginBottom: 6 }}>Horizontal</Text>
+          <View style={{ flexDirection: 'row', borderRadius: 8, borderWidth: 1, borderColor, overflow: 'hidden' }}>
+            {ALIGNMENT_H.map(a => (
+              <TouchableOpacity
+                key={a.id}
+                style={{ flex: 1, paddingVertical: 10, alignItems: 'center', backgroundColor: alignH === a.id ? accent : cardBg }}
+                onPress={() => setAlignH(a.id as any)}
+              >
+                <Text style={{ color: alignH === a.id ? '#fff' : textColor, fontSize: 16 }}>{a.icon}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={{ color: muted, fontSize: 12, marginBottom: 6 }}>Vertical</Text>
+          <View style={{ flexDirection: 'row', borderRadius: 8, borderWidth: 1, borderColor, overflow: 'hidden' }}>
+            {ALIGNMENT_V.map(a => (
+              <TouchableOpacity
+                key={a.id}
+                style={{ flex: 1, paddingVertical: 10, alignItems: 'center', backgroundColor: alignV === a.id ? accent : cardBg }}
+                onPress={() => setAlignV(a.id as any)}
+              >
+                <Text style={{ color: alignV === a.id ? '#fff' : textColor, fontSize: 16 }}>{a.icon}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      </View>
     </ToolShell>
   );
 }
 
 const styles = StyleSheet.create({
-  pickBtn: { padding: 24, borderRadius: 14, alignItems: 'center', borderWidth: 2, borderStyle: 'dashed', marginBottom: 16 },
+  pickBtn: { padding: 20, borderRadius: 14, alignItems: 'center', borderWidth: 2, borderStyle: 'dashed', marginBottom: 16 },
   pickText: { fontSize: 15, fontWeight: '700', marginBottom: 4 },
   sectionLabel: { fontSize: 15, fontWeight: '700' },
   sizeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 16 },
   sizeCard: { width: '47%', padding: 12, borderRadius: 12, borderWidth: 2, alignItems: 'center' },
-  customBox: { padding: 16, borderRadius: 14, marginTop: 8 },
+  customBox: { padding: 16, borderRadius: 14, marginBottom: 4 },
   input: { borderWidth: 1, borderRadius: 10, padding: 12, fontSize: 16, textAlign: 'center' },
 });

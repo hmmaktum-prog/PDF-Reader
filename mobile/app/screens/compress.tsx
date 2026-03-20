@@ -1,23 +1,35 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, TextInput, Switch } from 'react-native';
 import ToolShell from '../components/ToolShell';
 import { useAppTheme } from '../context/ThemeContext';
 import { compressPdf } from '../utils/nativeModules';
 import { pickSinglePdf } from '../utils/filePicker';
 
-type Level = 'low' | 'medium' | 'high';
-
 export default function CompressScreen() {
   const { isDark } = useAppTheme();
-  const [level, setLevel] = useState<Level>('medium');
+  const [level, setLevel] = useState('Balanced');
+  const [expertMode, setExpertMode] = useState(false);
+  const [imgQuality, setImgQuality] = useState('70');
+  const [resScale, setResScale] = useState('100');
+  const [grayscale, setGrayscale] = useState(false);
 
   const textColor = isDark ? '#fff' : '#000';
   const cardBg = isDark ? '#1e1e1e' : '#f0f0f0';
+  const inputBg = isDark ? '#2a2a2a' : '#fff';
   const accent = '#007AFF';
+  const borderColor = isDark ? '#444' : '#ccc';
 
   const [selectedFile, setSelectedFile] = useState('');
   const [selectedFileName, setSelectedFileName] = useState('');
   const muted = isDark ? '#888' : '#999';
+
+  const PRESETS = [
+    { id: 'Extreme', icon: '🗜️', desc: 'Minimal quality, tiny size', saving: '~80-95%' },
+    { id: 'Strong', icon: '📦', desc: 'Lower quality photos', saving: '~60-80%' },
+    { id: 'Balanced', icon: '⚖️', desc: 'Best compromise', saving: '~40-60%' },
+    { id: 'Good', icon: '👍', desc: 'Slightly compressed', saving: '~20-40%' },
+    { id: 'High', icon: '📸', desc: 'Original look retained', saving: '~10-20%' },
+  ];
 
   const handlePickFile = async () => {
     try {
@@ -30,19 +42,18 @@ export default function CompressScreen() {
     }
   };
 
-  const levelInfo: Record<Level, { icon: string; desc: string; saving: string }> = {
-    low: { icon: '📄', desc: 'Quality preserved, minor reduction', saving: '~10-20% smaller' },
-    medium: { icon: '📦', desc: 'Best balance of size and quality', saving: '~40-60% smaller' },
-    high: { icon: '🗜️', desc: 'Maximum compression, smallest size', saving: '~70-85% smaller' },
-  };
-
   const handleCompress = async (onProgress: (pct: number, label?: string) => void) => {
     if (!selectedFile) throw new Error('প্রথমে একটি PDF ফাইল নির্বাচন করুন');
     const outputPath = '/storage/emulated/0/Download/PDFPowerTools/compressed_output.pdf';
     onProgress(10, 'Analyzing PDF structure...');
     await new Promise(r => setTimeout(r, 400));
-    onProgress(35, 'Optimizing object streams via QPDF...');
-    await compressPdf(selectedFile, outputPath);
+    onProgress(35, `Optimizing streams (Grayscale: ${grayscale})...`);
+    
+    // Convert text inputs
+    const q = parseInt(imgQuality) || 70;
+    const r = parseInt(resScale) || 100;
+    
+    await compressPdf(selectedFile, outputPath, expertMode ? 'custom' : level, q, r, grayscale);
     onProgress(70, 'Reducing image resolution...');
     await new Promise(r => setTimeout(r, 400));
     onProgress(90, 'Writing compressed file...');
@@ -56,7 +67,6 @@ export default function CompressScreen() {
       <TouchableOpacity
         style={[styles.pickBtn, { backgroundColor: cardBg, borderColor: accent }]}
         onPress={handlePickFile}
-        testID="button-pick-file"
         activeOpacity={0.7}
       >
         <Text style={{ fontSize: 30, marginBottom: 6 }}>📁</Text>
@@ -66,39 +76,74 @@ export default function CompressScreen() {
         <Text style={{ color: muted, fontSize: 12 }}>{selectedFile ? 'Tap to change file' : 'Tap to browse'}</Text>
       </TouchableOpacity>
 
-      <Text style={[styles.label, { color: textColor, marginBottom: 10 }]}>🗜️ Compression Level</Text>
-      {(['low', 'medium', 'high'] as Level[]).map(l => (
-        <TouchableOpacity
-          key={l}
-          style={[styles.optionCard, {
-            backgroundColor: level === l ? accent + '15' : cardBg,
-            borderColor: level === l ? accent : isDark ? '#333' : '#ddd',
-          }]}
-          onPress={() => setLevel(l)}
-          testID={`button-level-${l}`}
-        >
-          <Text style={{ fontSize: 28 }}>{levelInfo[l].icon}</Text>
-          <View style={{ flex: 1, marginLeft: 12 }}>
-            <Text style={[styles.optionTitle, { color: level === l ? accent : textColor }]}>
-              {l.charAt(0).toUpperCase() + l.slice(1)}
-            </Text>
-            <Text style={{ color: muted, fontSize: 12 }}>{levelInfo[l].desc}</Text>
-            <Text style={{ color: level === l ? accent : muted, fontSize: 11, marginTop: 2, fontWeight: '600' }}>
-              {levelInfo[l].saving}
-            </Text>
-          </View>
-          {level === l && <Text style={{ color: accent, fontSize: 20 }}>✓</Text>}
+      <View style={[styles.sectionHeader, { marginBottom: 10 }]}>
+        <Text style={[styles.label, { color: textColor }]}>🗜️ Compression Level</Text>
+        <TouchableOpacity onPress={() => setExpertMode(!expertMode)}>
+          <Text style={{ color: accent, fontSize: 12, fontWeight: '600' }}>
+            {expertMode ? 'Use Presets' : 'Expert Settings'}
+          </Text>
         </TouchableOpacity>
-      ))}
+      </View>
+
+      {!expertMode ? (
+        PRESETS.map(p => (
+          <TouchableOpacity
+            key={p.id}
+            style={[styles.optionCard, {
+              backgroundColor: level === p.id ? accent + '15' : cardBg,
+              borderColor: level === p.id ? accent : isDark ? '#333' : '#ddd',
+            }]}
+            onPress={() => setLevel(p.id)}
+          >
+            <Text style={{ fontSize: 28 }}>{p.icon}</Text>
+            <View style={{ flex: 1, marginLeft: 12 }}>
+              <Text style={[styles.optionTitle, { color: level === p.id ? accent : textColor }]}>{p.id}</Text>
+              <Text style={{ color: muted, fontSize: 12 }}>{p.desc}</Text>
+              <Text style={{ color: level === p.id ? accent : muted, fontSize: 11, marginTop: 2, fontWeight: '600' }}>{p.saving} smaller</Text>
+            </View>
+            {level === p.id && <Text style={{ color: accent, fontSize: 20 }}>✓</Text>}
+          </TouchableOpacity>
+        ))
+      ) : (
+        <View style={[styles.expertBox, { backgroundColor: cardBg, borderColor }]}>
+          <Text style={{ color: textColor, fontWeight: 'bold', marginBottom: 12 }}>🛠 Expert Image Resampling</Text>
+          <View style={{ flexDirection: 'row', gap: 12, marginBottom: 12 }}>
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: muted, fontSize: 12, marginBottom: 4 }}>Image Quality (1-100)</Text>
+              <TextInput style={[styles.input, { backgroundColor: inputBg, color: textColor, borderColor }]} value={imgQuality} onChangeText={setImgQuality} keyboardType="number-pad" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: muted, fontSize: 12, marginBottom: 4 }}>Res Scale (10-200%)</Text>
+              <TextInput style={[styles.input, { backgroundColor: inputBg, color: textColor, borderColor }]} value={resScale} onChangeText={setResScale} keyboardType="number-pad" />
+            </View>
+          </View>
+          <Text style={{ color: muted, fontSize: 11, lineHeight: 16 }}>
+            Directly sets JPEG compression parameters. Lower values reduce filesize dramatically but induce artifacts.
+          </Text>
+        </View>
+      )}
+
+      <TouchableOpacity style={[styles.toggleRow, { backgroundColor: cardBg }]} onPress={() => setGrayscale(!grayscale)}>
+        <View style={{ flex: 1 }}>
+          <Text style={{ color: textColor, fontSize: 14, fontWeight: '600' }}>Grayscale (B&W)</Text>
+          <Text style={{ color: muted, fontSize: 12, marginTop: 2 }}>
+            Convert all colors to shades of gray to save extreme file size.
+          </Text>
+        </View>
+        <Switch value={grayscale} onValueChange={setGrayscale} trackColor={{ false: '#555', true: accent }} />
+      </TouchableOpacity>
     </ToolShell>
   );
 }
 
 const styles = StyleSheet.create({
-  section: { flex: 1 },
-  pickBtn: { padding: 20, borderRadius: 12, alignItems: 'center', borderWidth: 1, borderColor: '#007AFF', borderStyle: 'dashed' },
+  pickBtn: { padding: 20, borderRadius: 12, alignItems: 'center', borderWidth: 1, borderColor: '#007AFF', borderStyle: 'dashed', marginBottom: 16 },
   pickText: { fontSize: 16, fontWeight: '600' },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   label: { fontSize: 15, fontWeight: '700' },
-  optionCard: { flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 12, borderWidth: 1, marginBottom: 8 },
+  optionCard: { flexDirection: 'row', alignItems: 'center', padding: 12, borderRadius: 12, borderWidth: 1, marginBottom: 8 },
   optionTitle: { fontSize: 15, fontWeight: '600' },
+  expertBox: { padding: 16, borderRadius: 12, borderWidth: 1, marginBottom: 10 },
+  input: { borderWidth: 1, borderRadius: 8, padding: 10, fontSize: 15, textAlign: 'center' },
+  toggleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderRadius: 12, marginTop: 8 },
 });

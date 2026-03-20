@@ -1,18 +1,19 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Switch } from 'react-native';
 import ToolShell from '../components/ToolShell';
 import { useAppTheme } from '../context/ThemeContext';
 import { createBooklet } from '../utils/nativeModules';
 
 const BINDING_TYPES = [
-  { id: 'saddle', label: 'Saddle-Stitch', emoji: '📚', desc: 'Pages folded & stapled in center' },
-  { id: 'perfect', label: 'Perfect Bind', emoji: '📖', desc: 'Flat spine, glue-bound' },
+  { id: 'saddle', label: 'Saddle-Stitch', emoji: '📚', desc: 'Pages folded & stapled (multiple of 4)' },
+  { id: 'perfect', label: 'Perfect Bind', emoji: '📖', desc: 'Flat spine, glue-bound (multiple of 2)' },
 ];
 
 export default function BookletScreen() {
   const { isDark } = useAppTheme();
   const [binding, setBinding] = useState('saddle');
   const [selectedFile, setSelectedFile] = useState('');
+  const [autoPadding, setAutoPadding] = useState(true);
 
   const textColor = isDark ? '#fff' : '#000';
   const cardBg = isDark ? '#1e1e1e' : '#f0f0f0';
@@ -24,8 +25,8 @@ export default function BookletScreen() {
     const outputPath = '/storage/emulated/0/Download/PDFPowerTools/booklet_output.pdf';
     onProgress(20, 'Analyzing page count...');
     await new Promise(r => setTimeout(r, 400));
-    onProgress(50, 'Rearranging pages for booklet layout...');
-    await createBooklet(selectedFile, outputPath, binding);
+    onProgress(50, `Rearranging for booklet (Auto Pad: ${autoPadding})...`);
+    await createBooklet(selectedFile, outputPath, binding, autoPadding);
     onProgress(80, 'Writing output...');
     await new Promise(r => setTimeout(r, 300));
     onProgress(100, 'Done!');
@@ -47,13 +48,6 @@ export default function BookletScreen() {
         <Text style={{ color: muted, fontSize: 12 }}>Tap to browse</Text>
       </TouchableOpacity>
 
-      <View style={[styles.howBox, { backgroundColor: cardBg }]}>
-        <Text style={[styles.sectionLabel, { color: textColor, marginBottom: 8 }]}>ℹ️ How it works</Text>
-        <Text style={{ color: muted, fontSize: 13, lineHeight: 20 }}>
-          Pages are reordered so that when printed double-sided and folded in half, the result is a perfectly ordered booklet. E.g. for 8 pages: Sheet 1 prints pages 8 & 1 on front, 2 & 7 on back.
-        </Text>
-      </View>
-
       <Text style={[styles.sectionLabel, { color: textColor, marginBottom: 10 }]}>📎 Binding Style</Text>
       {BINDING_TYPES.map(b => (
         <TouchableOpacity
@@ -69,6 +63,16 @@ export default function BookletScreen() {
           {binding === b.id && <Text style={{ color: accent, fontSize: 18 }}>✓</Text>}
         </TouchableOpacity>
       ))}
+
+      <TouchableOpacity style={[styles.toggleRow, { backgroundColor: cardBg }]} onPress={() => setAutoPadding(!autoPadding)}>
+        <View style={{ flex: 1 }}>
+          <Text style={{ color: textColor, fontSize: 14, fontWeight: '600' }}>Auto Padding</Text>
+          <Text style={{ color: muted, fontSize: 12, marginTop: 2, paddingRight: 10 }}>
+            Automatically append blank pages to make the total page count a multiple of 4 (for saddle-stitch).
+          </Text>
+        </View>
+        <Switch value={autoPadding} onValueChange={setAutoPadding} trackColor={{ false: '#555', true: accent }} />
+      </TouchableOpacity>
     </ToolShell>
   );
 }
@@ -76,7 +80,7 @@ export default function BookletScreen() {
 const styles = StyleSheet.create({
   pickBtn: { padding: 24, borderRadius: 14, alignItems: 'center', borderWidth: 2, borderStyle: 'dashed', marginBottom: 16 },
   pickText: { fontSize: 15, fontWeight: '700', marginBottom: 4 },
-  sectionLabel: { fontSize: 15, fontWeight: '700' },
-  howBox: { padding: 16, borderRadius: 14, marginBottom: 16 },
+  sectionLabel: { fontSize: 15, fontWeight: '700', marginTop: 8 },
   bindCard: { flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 12, borderWidth: 1, marginBottom: 8 },
+  toggleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderRadius: 12, marginTop: 8 },
 });

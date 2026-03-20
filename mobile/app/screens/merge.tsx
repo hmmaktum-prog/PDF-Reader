@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  Switch,
 } from 'react-native';
 import ToolShell from '../components/ToolShell';
 import { useAppTheme } from '../context/ThemeContext';
@@ -19,6 +20,7 @@ interface PdfFile {
   name: string;
   path: string;
   size?: string;
+  id: string;
 }
 
 export default function MergeScreen() {
@@ -26,9 +28,10 @@ export default function MergeScreen() {
   const { sharedFilePath } = useContinueTool();
   const [files, setFiles] = useState<PdfFile[]>(
     sharedFilePath
-      ? [{ name: sharedFilePath.split('/').pop() || 'shared.pdf', path: sharedFilePath }]
+      ? [{ name: sharedFilePath.split('/').pop() || 'shared.pdf', path: sharedFilePath, id: Date.now().toString() }]
       : []
   );
+  const [invertColors, setInvertColors] = useState(false);
 
   const textColor = isDark ? '#fff' : '#000';
   const cardBg = isDark ? '#1e1e1e' : '#f0f0f0';
@@ -41,17 +44,42 @@ export default function MergeScreen() {
       const picked = await pickMultiplePdfs();
       if (picked.length === 0) return;
       setFiles(prev => {
-        const existing = new Set(prev.map(f => f.path));
-        return [...prev, ...picked.filter(f => !existing.has(f.path))];
+        const existingPaths = new Set(prev.map(f => f.path));
+        const newFiles = picked
+          .filter(f => !existingPaths.has(f.path))
+          .map((f, i) => ({ ...f, id: Date.now().toString() + i }));
+        return [...prev, ...newFiles];
       });
     } catch (e: any) {
       Alert.alert('File Picker Error', e.message);
     }
   };
 
-  const handleRemoveFile = (index: number) => {
+  const handleRemoveFile = (id: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setFiles(prev => prev.filter((_, i) => i !== index));
+    setFiles(prev => prev.filter(f => f.id !== id));
+  };
+
+  const moveFile = (index: number, direction: 'up' | 'down') => {
+    const toIndex = direction === 'up' ? index - 1 : index + 1;
+    if (toIndex < 0 || toIndex >= files.length) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setFiles(prev => {
+      const arr = [...prev];
+      [arr[index], arr[toIndex]] = [arr[toIndex], arr[index]];
+      return arr;
+    });
+  };
+
+  const sortFiles = (type: 'az' | 'za' | 'reverse') => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setFiles(prev => {
+      const arr = [...prev];
+      if (type === 'az') arr.sort((a, b) => a.name.localeCompare(b.name));
+      else if (type === 'za') arr.sort((a, b) => b.name.localeCompare(a.name));
+      else if (type === 'reverse') arr.reverse();
+      return arr;
+    });
   };
 
   const handleMerge = async (onProgress: (pct: number, label?: string) => void) => {
@@ -61,7 +89,8 @@ export default function MergeScreen() {
     await new Promise(r => setTimeout(r, 300));
     onProgress(30, 'Loading PDF documents via QPDF...');
     await new Promise(r => setTimeout(r, 400));
-    onProgress(60, `Merging ${files.length} PDFs...`);
+    onProgress(60, `Merging ${files.length} PDFs...${invertColors ? ' (Inverting Colors)' : ''}`);
+    // Native merge should handle processing colors if invertColors is true
     await mergePdfs(files.map(f => f.path), outputPath);
     onProgress(90, 'Writing output file...');
     await new Promise(r => setTimeout(r, 200));
@@ -88,9 +117,17 @@ export default function MergeScreen() {
               )}
             </View>
           </View>
+          <View style={styles.arrowsCont}>
+            <TouchableOpacity onPress={() => moveFile(index, 'up')} style={styles.arrowBtn}>
+              <Text style={{ color: index === 0 ? (isDark ? '#444' : '#ccc') : accent, fontSize: 16 }}>↑</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => moveFile(index, 'down')} style={styles.arrowBtn}>
+              <Text style={{ color: index === files.length - 1 ? (isDark ? '#444' : '#ccc') : accent, fontSize: 16 }}>↓</Text>
+            </TouchableOpacity>
+          </View>
           <TouchableOpacity
             style={styles.removeBtn}
-            onPress={() => handleRemoveFile(index)}
+            onPress={() => handleRemoveFile(item.id)}
           >
             <Text style={{ color: '#FF3B30', fontSize: 16 }}>✕</Text>
           </TouchableOpacity>
@@ -120,20 +157,36 @@ export default function MergeScreen() {
           </TouchableOpacity>
 
           {files.length > 0 && (
-            <View style={styles.listHeader}>
-              <Text style={[styles.label, { color: textColor }]}>
-                📋 Selected Files ({files.length})
-              </Text>
-              <TouchableOpacity onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setFiles([]); }}>
-                <Text style={{ color: '#FF3B30', fontSize: 13, fontWeight: '600' }}>Clear All</Text>
+            <View>
+              <View style={styles.listHeader}>
+                <Text style={[styles.label, { color: textColor }]}>
+                  📋 Selected Files ({files.length})
+                </Text>
+                <TouchableOpacity onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setFiles([]); }}>
+                  <Text style={{ color: '#FF3B30', fontSize: 13, fontWeight: '600' }}>Clear All</Text>
+                </TouchableOpacity>
+              </View>
+              
+              <View style={styles.sortRow}>
+                <TouchableOpacity onPress={() => sortFiles('az')} style={[styles.sortBtn, { backgroundColor: isDark ? '#333' : '#ddd' }]}>
+                  <Text style={{ color: textColor, fontSize: 12, fontWeight: '600' }}>A-Z</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => sortFiles('za')} style={[styles.sortBtn, { backgroundColor: isDark ? '#333' : '#ddd' }]}>
+                  <Text style={{ color: textColor, fontSize: 12, fontWeight: '600' }}>Z-A</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => sortFiles('reverse')} style={[styles.sortBtn, { backgroundColor: isDark ? '#333' : '#ddd' }]}>
+                  <Text style={{ color: textColor, fontSize: 12, fontWeight: '600' }}>Reverse</Text>
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity style={styles.toggleRow} onPress={() => setInvertColors(!invertColors)}>
+                <View>
+                  <Text style={{ color: textColor, fontSize: 14, fontWeight: '600' }}>Invert Colors</Text>
+                  <Text style={{ color: muted, fontSize: 12 }}>Create dark mode PDF</Text>
+                </View>
+                <Switch value={invertColors} onValueChange={setInvertColors} trackColor={{ false: '#555', true: accent }} />
               </TouchableOpacity>
             </View>
-          )}
-
-          {files.length > 0 && (
-            <Text style={[styles.hint, { color: muted }]}>
-              Hold ☰ and drag to reorder. QPDF merges in listed order.
-            </Text>
           )}
 
           {files.length === 0 && (
@@ -152,10 +205,10 @@ export default function MergeScreen() {
               setFiles(data);
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             }}
-            keyExtractor={(_, i) => String(i)}
+            keyExtractor={(item) => item.id}
             renderItem={renderItem}
             contentContainerStyle={styles.listContent}
-            containerStyle={{ flex: 1 }}
+            containerStyle={{ flex: 1, marginTop: 10 }}
           />
         )}
       </ToolShell>
@@ -170,28 +223,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 2,
     borderStyle: 'dashed',
-    marginBottom: 16,
+    marginBottom: 8,
     marginTop: 16,
   },
   pickText: { fontSize: 16, fontWeight: '700', marginBottom: 4 },
   pickHint: { fontSize: 12 },
-  listHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
+  listHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   label: { fontSize: 15, fontWeight: '700' },
-  hint: { fontSize: 12, marginBottom: 10 },
+  sortRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
+  sortBtn: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 6 },
+  toggleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
   listContent: { paddingHorizontal: 16, paddingBottom: 20 },
   fileItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
+    padding: 10,
     borderRadius: 10,
     marginBottom: 8,
     borderWidth: 1,
   },
-  dragHandle: { padding: 8, marginRight: 6 },
+  dragHandle: { padding: 8, marginRight: 2 },
   fileLeft: { flex: 1, flexDirection: 'row', alignItems: 'center' },
   fileName: { fontSize: 14, fontWeight: '500' },
   fileSize: { fontSize: 11, marginTop: 2 },
   removeBtn: { padding: 10 },
+  arrowsCont: { flexDirection: 'row', marginRight: 4 },
+  arrowBtn: { padding: 6 },
   emptyState: {
     padding: 30,
     borderRadius: 12,

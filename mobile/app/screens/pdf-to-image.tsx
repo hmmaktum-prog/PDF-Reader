@@ -1,25 +1,23 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, Switch } from 'react-native';
 import ToolShell from '../components/ToolShell';
 import { useAppTheme } from '../context/ThemeContext';
 import { batchRenderPages } from '../utils/nativeModules';
 import { pickSinglePdf } from '../utils/filePicker';
 
-type ImgFormat = 'jpeg' | 'png';
-
-const DPI_OPTIONS = [
-  { label: '150 DPI', value: 150, hint: 'Normal — smaller files' },
-  { label: '300 DPI', value: 300, hint: 'High — print quality' },
-  { label: '600 DPI', value: 600, hint: 'Ultra — very large files' },
-];
-
 export default function PdfToImageScreen() {
   const { isDark } = useAppTheme();
-  const [format, setFormat] = useState<ImgFormat>('jpeg');
-  const [dpi, setDpi] = useState(300);
+  const [format, setFormat] = useState<'jpeg'|'png'>('jpeg');
+  const [scale, setScale] = useState(2.0);
+  const [outputMode, setOutputMode] = useState<'zip'|'pdf'>('zip');
+  
   const [selectedFile, setSelectedFile] = useState('');
   const [selectedFileName, setSelectedFileName] = useState('');
-  const [outputZip, setOutputZip] = useState(true);
+
+  const textColor = isDark ? '#fff' : '#000';
+  const cardBg = isDark ? '#1e1e1e' : '#f0f0f0';
+  const accent = '#007AFF';
+  const muted = isDark ? '#888' : '#999';
 
   const handlePickFile = async () => {
     try {
@@ -32,47 +30,44 @@ export default function PdfToImageScreen() {
     }
   };
 
-  const textColor = isDark ? '#fff' : '#000';
-  const cardBg = isDark ? '#1e1e1e' : '#f0f0f0';
-  const accent = '#007AFF';
-  const muted = isDark ? '#888' : '#999';
-
-  const handleAction = async (onProgress) => {
+  const handleAction = async (onProgress: (pct: number, label?: string) => void) => {
     if (!selectedFile) throw new Error('প্রথমে একটি PDF ফাইল নির্বাচন করুন');
-    const outputDir = '/storage/emulated/0/Download/PDFPowerTools/pdf_images';
+    const outPath = outputMode === 'zip' 
+      ? '/storage/emulated/0/Download/PDFPowerTools/images.zip' 
+      : '/storage/emulated/0/Download/PDFPowerTools/images_new.pdf';
+
     onProgress(10, 'Loading PDF...');
     await new Promise(r => setTimeout(r, 300));
-    onProgress(35, `Rendering pages at ${dpi} DPI via MuPDF...`);
-    await batchRenderPages(selectedFile, outputDir, format, dpi);
-    onProgress(75, outputZip ? 'Creating ZIP archive...' : 'Saving images...');
+    onProgress(35, `Rendering pages at ${scale.toFixed(1)}x Scale via MuPDF...`);
+    // Assuming native module supports scale and output mode
+    await batchRenderPages(selectedFile, outPath, format, scale, outputMode);
+    onProgress(75, outputMode === 'zip' ? 'Creating ZIP archive...' : 'Saving to new PDF...');
     await new Promise(r => setTimeout(r, 400));
     onProgress(100, 'Done!');
-    return outputDir + (outputZip ? '.zip' : '');
+    return outPath;
   };
 
   return (
-    <ToolShell title="PDF to Image" subtitle="Convert each page to image via MuPDF" onExecute={handleAction} executeLabel="📸 Convert to Images">
+    <ToolShell title="PDF to Image" subtitle="Extract pages to high-res images" onExecute={handleAction} executeLabel={`📸 Convert to ${outputMode.toUpperCase()}`}>
       <TouchableOpacity
         style={[styles.pickBtn, { backgroundColor: cardBg, borderColor: accent }]}
         onPress={handlePickFile}
-        testID="button-pick-file"
         activeOpacity={0.7}
       >
         <Text style={{ fontSize: 30, marginBottom: 6 }}>📁</Text>
         <Text style={[styles.pickText, { color: textColor }]}>
           {selectedFileName || 'Select PDF File'}
         </Text>
-        <Text style={{ color: muted, fontSize: 12 }}>{selectedFile ? 'Tap to change file' : 'MuPDF NDK renders each page at high quality'}</Text>
+        <Text style={{ color: muted, fontSize: 12 }}>Tap to browse</Text>
       </TouchableOpacity>
 
       <Text style={[styles.sectionLabel, { color: textColor, marginBottom: 10 }]}>📸 Output Format</Text>
-      <View style={styles.formatRow}>
-        {(['jpeg', 'png'] as ImgFormat[]).map(f => (
+      <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
+        {(['jpeg', 'png'] as const).map(f => (
           <TouchableOpacity
             key={f}
-            style={[styles.formatCard, { backgroundColor: cardBg, borderColor: format === f ? accent : isDark ? '#444' : '#ccc' }, format === f && { backgroundColor: accent + '22' }]}
+            style={[styles.formatCard, { backgroundColor: cardBg, borderColor: format === f ? accent : isDark ? '#444' : '#ccc' }, format === f && { backgroundColor: accent + '15' }]}
             onPress={() => setFormat(f)}
-            testID={"button-format-" + f}
           >
             <Text style={{ fontSize: 24, marginBottom: 4 }}>{f === 'jpeg' ? '📷' : '🖼️'}</Text>
             <Text style={{ color: format === f ? accent : textColor, fontWeight: '700', textTransform: 'uppercase' }}>{f}</Text>
@@ -81,47 +76,46 @@ export default function PdfToImageScreen() {
         ))}
       </View>
 
-      <Text style={[styles.sectionLabel, { color: textColor, marginBottom: 10 }]}>⚡ Resolution (DPI)</Text>
-      {DPI_OPTIONS.map(opt => (
-        <TouchableOpacity
-          key={opt.value}
-          style={[styles.dpiCard, { backgroundColor: cardBg, borderColor: dpi === opt.value ? accent : isDark ? '#333' : '#ddd' }, dpi === opt.value && { backgroundColor: accent + '15' }]}
-          onPress={() => setDpi(opt.value)}
-          testID={"button-dpi-" + opt.value}
-        >
-          <View style={{ flex: 1 }}>
-            <Text style={{ color: dpi === opt.value ? accent : textColor, fontWeight: '600' }}>{opt.label}</Text>
-            <Text style={{ color: muted, fontSize: 12 }}>{opt.hint}</Text>
-          </View>
-          {dpi === opt.value && <Text style={{ color: accent, fontSize: 18 }}>✓</Text>}
-        </TouchableOpacity>
-      ))}
+      <Text style={[styles.sectionLabel, { color: textColor, marginBottom: 10 }]}>🔍 Resolution Multiplier</Text>
+      <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
+        {[1.0, 1.5, 2.0, 3.0].map(s => (
+          <TouchableOpacity
+            key={s}
+            style={[styles.scaleCard, { backgroundColor: scale === s ? accent : cardBg, borderColor: isDark ? '#444' : '#ccc' }]}
+            onPress={() => setScale(s)}
+          >
+            <Text style={{ color: scale === s ? '#fff' : textColor, fontWeight: '600' }}>{s.toFixed(1)}x</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
 
-      <TouchableOpacity
-        style={[styles.toggleRow, { backgroundColor: cardBg }]}
-        onPress={() => setOutputZip(!outputZip)}
-        testID="button-toggle-zip"
-      >
-        <View>
-          <Text style={{ color: textColor, fontWeight: '600' }}>📦 Bundle as ZIP</Text>
-          <Text style={{ color: muted, fontSize: 12 }}>Compress all images into one ZIP file</Text>
-        </View>
-        <View style={[styles.toggleOuter, { backgroundColor: outputZip ? accent : isDark ? '#555' : '#ccc' }]}>
-          <View style={[styles.toggleThumb, { marginLeft: outputZip ? 22 : 2 }]} />
-        </View>
-      </TouchableOpacity>
+      <Text style={[styles.sectionLabel, { color: textColor, marginBottom: 10 }]}>📦 Output Destination</Text>
+      <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
+        <TouchableOpacity
+          style={[styles.outCard, { backgroundColor: cardBg, borderColor: outputMode === 'zip' ? accent : isDark ? '#444' : '#ccc' }, outputMode === 'zip' && { backgroundColor: accent + '15' }]}
+          onPress={() => setOutputMode('zip')}
+        >
+          <Text style={{ color: outputMode === 'zip' ? accent : textColor, fontWeight: '600', marginBottom: 2 }}>ZIP Archive</Text>
+          <Text style={{ color: muted, fontSize: 11 }}>Bundle images together</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.outCard, { backgroundColor: cardBg, borderColor: outputMode === 'pdf' ? accent : isDark ? '#444' : '#ccc' }, outputMode === 'pdf' && { backgroundColor: accent + '15' }]}
+          onPress={() => setOutputMode('pdf')}
+        >
+          <Text style={{ color: outputMode === 'pdf' ? accent : textColor, fontWeight: '600', marginBottom: 2 }}>Images to PDF</Text>
+          <Text style={{ color: muted, fontSize: 11 }}>Save as new PDF</Text>
+        </TouchableOpacity>
+      </View>
     </ToolShell>
   );
 }
 
 const styles = StyleSheet.create({
-  pickBtn: { padding: 24, borderRadius: 14, alignItems: 'center', borderWidth: 2, borderStyle: 'dashed', marginBottom: 16 },
+  pickBtn: { padding: 24, borderRadius: 12, alignItems: 'center', borderWidth: 2, borderStyle: 'dashed', marginBottom: 16 },
   pickText: { fontSize: 15, fontWeight: '700', marginBottom: 4 },
   sectionLabel: { fontSize: 15, fontWeight: '700' },
-  formatRow: { flexDirection: 'row', gap: 12, marginBottom: 16 },
-  formatCard: { flex: 1, padding: 16, borderRadius: 12, borderWidth: 2, alignItems: 'center' },
-  dpiCard: { flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 12, borderWidth: 1, marginBottom: 8 },
-  toggleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 14, borderRadius: 12, marginTop: 8 },
-  toggleOuter: { width: 46, height: 26, borderRadius: 13, justifyContent: 'center' },
-  toggleThumb: { width: 22, height: 22, borderRadius: 11, backgroundColor: '#fff' },
+  formatCard: { flex: 1, padding: 14, borderRadius: 12, borderWidth: 2, alignItems: 'center' },
+  scaleCard: { flex: 1, paddingVertical: 12, borderRadius: 10, borderWidth: 1, alignItems: 'center' },
+  outCard: { flex: 1, padding: 14, borderRadius: 12, borderWidth: 2, alignItems: 'center' },
 });
