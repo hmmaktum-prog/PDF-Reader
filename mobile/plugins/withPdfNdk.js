@@ -3,8 +3,15 @@ const { withAppBuildGradle, createRunOncePlugin } = require('@expo/config-plugin
 const pkg = require('../package.json');
 
 /**
- * Adds CMake external native build configuration to android/app/build.gradle.
- * CMake path is relative to android/app/ → ../../native/CMakeLists.txt
+ * Injects the externalNativeBuild CMake configuration into android/app/build.gradle.
+ *
+ * The CMakeLists.txt at native/ is the single entry point for the Android native build.
+ * It includes ReactNative-application.cmake (which produces libappmodules.so for the
+ * New Architecture / TurboModules) AND builds our custom pdfpowertools_native library.
+ *
+ * Required cmake arguments passed here:
+ *   PROJECT_BUILD_DIR — where Gradle writes generated autolinking/codegen files
+ *   ANDROID_STL      — use the shared C++ runtime (required by React Native)
  */
 const withCustomNativeBuild = (config) => {
   config = withAppBuildGradle(config, (cfg) => {
@@ -24,6 +31,8 @@ const withCustomNativeBuild = (config) => {
             cmake {
                 cppFlags "-std=c++17"
                 abiFilters "arm64-v8a", "x86_64"
+                arguments "-DPROJECT_BUILD_DIR=\${projectDir}/build",
+                          "-DANDROID_STL=c++_shared"
             }
         }
     }`
@@ -43,6 +52,10 @@ const withCustomNativeBuild = (config) => {
             cmake {
                 cppFlags += "-std=c++17"
                 abiFilters += listOf("arm64-v8a", "x86_64")
+                arguments += listOf(
+                    "-DPROJECT_BUILD_DIR=\${projectDir}/build",
+                    "-DANDROID_STL=c++_shared"
+                )
             }
         }
     }`

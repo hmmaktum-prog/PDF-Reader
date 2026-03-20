@@ -1,25 +1,34 @@
-cmake_minimum_required(VERSION 3.18.1)
-project(PdfPowerToolsNative)
+cmake_minimum_required(VERSION 3.13)
 
-# Android NDK automatically provides JNI headers — no find_package(JNI) needed.
+# Project name MUST be "appmodules" — CMake creates lib<name>.so, so this
+# produces libappmodules.so which React Native New Architecture requires to
+# register TurboModules (including PlatformConstants, etc.).
+project(appmodules)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# QPDF and MuPDF will be linked as prebuilt .so files in Phase 3.
-# add_library(qpdf SHARED IMPORTED)
-# set_target_properties(qpdf PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/libs/${ANDROID_ABI}/libqpdf.so)
-# add_library(mupdf SHARED IMPORTED)
-# set_target_properties(mupdf PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/libs/${ANDROID_ABI}/libmupdf.so)
+# Path to ReactAndroid: one level up from native/ brings us to the mobile/
+# workspace root, then into node_modules.
+set(REACT_ANDROID_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../node_modules/react-native/ReactAndroid)
 
-# Native bridge shared library
+# Include React Native's application CMake. This:
+#   - Builds libappmodules.so (required for TurboModules / New Architecture)
+#   - Links in JSI, Fabric, fbjni, and all autolinked 3rd-party native modules
+#   - Globs *.cpp in CMAKE_CURRENT_SOURCE_DIR — bridge files live in src/ to
+#     avoid being picked up here.
+include(${REACT_ANDROID_DIR}/cmake-utils/ReactNative-application.cmake)
+
+# ── Custom PDF native bridge ─────────────────────────────────────────────────
+# Separate shared library loaded by the Java layer via System.loadLibrary().
+# QPDF and MuPDF prebuilt .so files will be linked here in Phase 3.
 add_library(
         pdfpowertools_native
         SHARED
-        qpdf_bridge.cpp
-        mupdf_bridge.cpp
+        src/qpdf_bridge.cpp
+        src/mupdf_bridge.cpp
 )
 
-# Android system libraries available in NDK
 find_library(log-lib log)
 find_library(android-lib android)
 
@@ -27,6 +36,6 @@ target_link_libraries(
         pdfpowertools_native
         ${log-lib}
         ${android-lib}
-        # qpdf     # Phase 3
-        # mupdf    # Phase 3
+        # qpdf   # Phase 3
+        # mupdf  # Phase 3
 )
