@@ -10,6 +10,7 @@ import {
 import { useRouter } from 'expo-router';
 import { useAppTheme } from './context/ThemeContext';
 import { useContinueTool } from './context/ContinueContext';
+import * as Haptics from 'expo-haptics';
 
 const QUICK_TOOLS = [
   { id: 'merge', name: 'Merge', icon: '🔗', route: '/screens/merge', color: '#007AFF' },
@@ -32,6 +33,7 @@ export default function HomeScreen() {
   const accent = '#007AFF';
 
   const cycleTheme = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     if (theme === 'system') setTheme('light');
     else if (theme === 'light') setTheme('dark');
     else setTheme('system');
@@ -112,7 +114,10 @@ export default function HomeScreen() {
             <TouchableOpacity
               key={tool.id}
               style={[styles.quickCard, { backgroundColor: cardBg }]}
-              onPress={() => router.push(tool.route as any)}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push(tool.route as any);
+              }}
               activeOpacity={0.75}
               testID={`button-quick-${tool.id}`}
             >

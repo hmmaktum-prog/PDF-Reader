@@ -2,14 +2,18 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import ToolShell from '../components/ToolShell';
 import { useAppTheme } from '../context/ThemeContext';
-import { grayscalePdf } from '../utils/nativeModules';
+import { grayscalePdf, renderPageToImage } from '../utils/nativeModules';
 import { pickSinglePdf } from '../utils/filePicker';
+import * as FileSystem from 'expo-file-system';
+import { Image, ActivityIndicator } from 'react-native';
 
 export default function GrayscaleScreen() {
   const { isDark } = useAppTheme();
   const [selectedFile, setSelectedFile] = useState('');
   const [selectedFileName, setSelectedFileName] = useState('');
   const [preserveQuality, setPreserveQuality] = useState(true);
+  const [previewUri, setPreviewUri] = useState<string | null>(null);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
 
   const handlePickFile = async () => {
     try {
@@ -17,6 +21,7 @@ export default function GrayscaleScreen() {
       if (!picked) return;
       setSelectedFile(picked.path);
       setSelectedFileName(picked.name);
+      setPreviewUri(null);
     } catch (e: any) {
       Alert.alert('File Picker Error', e.message);
     }
@@ -26,6 +31,20 @@ export default function GrayscaleScreen() {
   const cardBg = isDark ? '#1e1e1e' : '#f0f0f0';
   const accent = '#8E8E93';
   const muted = isDark ? '#888' : '#666';
+
+  const loadPreview = async () => {
+    if (!selectedFile) return;
+    try {
+      setIsLoadingPreview(true);
+      const outPath = `${FileSystem.cacheDirectory}preview_gray_${Date.now()}.jpg`;
+      await renderPageToImage(selectedFile, 0, outPath, false);
+      setPreviewUri(`file://${outPath}`);
+    } catch (e: any) {
+      Alert.alert('Preview Error', e.message);
+    } finally {
+      setIsLoadingPreview(false);
+    }
+  };
 
   const handleAction = async (onProgress) => {
     if (!selectedFile) throw new Error('প্রথমে একটি PDF ফাইল নির্বাচন করুন');
@@ -56,14 +75,34 @@ export default function GrayscaleScreen() {
       </TouchableOpacity>
 
       <View style={[styles.previewRow, { backgroundColor: cardBg }]}>
-        <View style={[styles.previewBox, { backgroundColor: '#FF3B30' }]}>
-          <Text style={{ color: '#fff', fontSize: 13, fontWeight: '600' }}>🌈 Before</Text>
-          <Text style={{ color: '#fff', fontSize: 11, marginTop: 4 }}>Full color</Text>
+        <View style={[styles.previewBox, { backgroundColor: previewUri ? 'transparent' : '#FF3B30' }]}>
+          {previewUri ? (
+            <Image source={{ uri: previewUri }} style={styles.previewImg} />
+          ) : (
+            <>
+              <Text style={{ color: '#fff', fontSize: 13, fontWeight: '600' }}>🌈 Before</Text>
+              <Text style={{ color: '#fff', fontSize: 11, marginTop: 4 }}>Full color</Text>
+            </>
+          )}
         </View>
-        <Text style={{ fontSize: 20, color: accent }}>→</Text>
-        <View style={[styles.previewBox, { backgroundColor: '#888888' }]}>
-          <Text style={{ color: '#fff', fontSize: 13, fontWeight: '600' }}>🖤 After</Text>
-          <Text style={{ color: '#fff', fontSize: 11, marginTop: 4 }}>Grayscale</Text>
+        
+        {selectedFile && !previewUri ? (
+          <TouchableOpacity onPress={loadPreview} style={{ padding: 10 }}>
+            {isLoadingPreview ? <ActivityIndicator color={accent} /> : <Text style={{ color: accent, fontSize: 12, fontWeight: 'bold' }}>Load{'\n'}Preview</Text>}
+          </TouchableOpacity>
+        ) : (
+          <Text style={{ fontSize: 20, color: accent }}>→</Text>
+        )}
+
+        <View style={[styles.previewBox, { backgroundColor: previewUri ? 'transparent' : '#888888' }]}>
+          {previewUri ? (
+            <Image source={{ uri: previewUri }} style={[styles.previewImg, { tintColor: '#888' }]} />
+          ) : (
+            <>
+              <Text style={{ color: '#fff', fontSize: 13, fontWeight: '600' }}>🖤 After</Text>
+              <Text style={{ color: '#fff', fontSize: 11, marginTop: 4 }}>Grayscale</Text>
+            </>
+          )}
         </View>
       </View>
 
@@ -101,7 +140,8 @@ const styles = StyleSheet.create({
   pickBtn: { padding: 24, borderRadius: 14, alignItems: 'center', borderWidth: 2, borderStyle: 'dashed', marginBottom: 16 },
   pickText: { fontSize: 15, fontWeight: '700', marginBottom: 4 },
   previewRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', padding: 16, borderRadius: 14, marginBottom: 14 },
-  previewBox: { flex: 1, padding: 14, borderRadius: 10, alignItems: 'center', marginHorizontal: 8 },
+  previewBox: { flex: 1, padding: 14, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginHorizontal: 8, height: 120 },
+  previewImg: { width: '100%', height: '100%', resizeMode: 'contain', borderRadius: 6 },
   infoBox: { padding: 24, borderRadius: 14, alignItems: 'center', marginBottom: 12 },
   infoTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10 },
   featureRow: { flexDirection: 'row', borderRadius: 14, padding: 16 },

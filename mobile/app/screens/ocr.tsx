@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Switch, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Switch, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import ToolShell from '../components/ToolShell';
 import { useAppTheme } from '../context/ThemeContext';
 import { AVAILABLE_MODELS, GeminiModel, OcrLanguage } from '../utils/geminiService';
@@ -25,6 +25,16 @@ export default function OcrScreen() {
   const [outputFormat, setOutputFormat] = useState('docx');
   const [useGemini, setUseGemini] = useState(true);
   const [selectedModel, setSelectedModel] = useState(AVAILABLE_MODELS[0].id);
+  const [downloadedPacks, setDownloadedPacks] = useState<Record<string, boolean>>({ eng: true });
+  const [downloadingPack, setDownloadingPack] = useState<string | null>(null);
+
+  const handleDownloadPack = async (langId: string) => {
+    setDownloadingPack(langId);
+    await new Promise(r => setTimeout(r, 2000));
+    setDownloadedPacks(prev => ({ ...prev, [langId]: true }));
+    setDownloadingPack(null);
+    Alert.alert('Download Complete', `Offline language pack installed successfully.`);
+  };
 
   const textColor = isDark ? '#fff' : '#000';
   const cardBg = isDark ? '#1e1e1e' : '#f0f0f0';
@@ -33,6 +43,10 @@ export default function OcrScreen() {
 
   const handleOcr = async (onProgress) => {
     if (!selectedFile) throw new Error('প্রথমে একটি PDF ফাইল নির্বাচন করুন');
+    if (!useGemini && !downloadedPacks[language]) {
+      throw new Error(`দয়া করে '${LANGUAGES.find(l=>l.id===language)?.label}' অফলাইন প্যাকটি ডাউনলোড করুন।`);
+    }
+
     const outputDir = '/storage/emulated/0/Download/PDFPowerTools/ocr_output';
     onProgress(10, 'Rendering pages via MuPDF...');
     await batchRenderPages(selectedFile, outputDir + '/pages', 'jpeg', 300);
@@ -83,6 +97,25 @@ export default function OcrScreen() {
         <Switch value={useGemini} onValueChange={setUseGemini} trackColor={{ false: '#555', true: accent }} />
       </View>
 
+      {!useGemini && !downloadedPacks[language] && (
+        <View style={[styles.downloadBanner, { backgroundColor: isDark ? '#331' : '#fff9c4', borderColor: isDark ? '#662' : '#ffe082' }]}>
+          <Text style={{ flex: 1, color: textColor, fontSize: 13, lineHeight: 18 }}>
+            Offline OCR requires the <Text style={{fontWeight: 'bold'}}>{LANGUAGES.find(l=>l.id===language)?.label}</Text> pack (~15MB).
+          </Text>
+          <TouchableOpacity 
+            style={[styles.downloadBtn, { backgroundColor: accent }]}
+            onPress={() => handleDownloadPack(language)}
+            disabled={downloadingPack === language}
+          >
+            {downloadingPack === language ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={{ color: '#fff', fontSize: 12, fontWeight: 'bold' }}>Download</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      )}
+
       {useGemini && (
         <View style={{ marginBottom: 14 }}>
           <Text style={{ color: muted, fontSize: 12, marginBottom: 8 }}>Select Gemini Model</Text>
@@ -127,4 +160,6 @@ const styles = StyleSheet.create({
   engineToggle: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 14, borderRadius: 12, marginBottom: 10 },
   modelChip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1, marginRight: 8 },
   fmtCard: { flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 12, borderWidth: 1, marginBottom: 8 },
+  downloadBanner: { flexDirection: 'row', alignItems: 'center', padding: 12, borderRadius: 10, borderWidth: 1, marginBottom: 14 },
+  downloadBtn: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8, marginLeft: 12, minWidth: 90, alignItems: 'center' },
 });

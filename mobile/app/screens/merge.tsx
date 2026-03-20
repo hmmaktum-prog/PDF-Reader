@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  FlatList,
   StyleSheet,
   Alert,
 } from 'react-native';
@@ -12,6 +11,9 @@ import { useAppTheme } from '../context/ThemeContext';
 import { mergePdfs } from '../utils/nativeModules';
 import { useContinueTool } from '../context/ContinueContext';
 import { pickMultiplePdfs } from '../utils/filePicker';
+import DraggableFlatList, { ScaleDecorator, RenderItemParams } from 'react-native-draggable-flatlist';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import * as Haptics from 'expo-haptics';
 
 interface PdfFile {
   name: string;
@@ -48,25 +50,8 @@ export default function MergeScreen() {
   };
 
   const handleRemoveFile = (index: number) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setFiles(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const handleMoveUp = (index: number) => {
-    if (index === 0) return;
-    setFiles(prev => {
-      const arr = [...prev];
-      [arr[index - 1], arr[index]] = [arr[index], arr[index - 1]];
-      return arr;
-    });
-  };
-
-  const handleMoveDown = (index: number) => {
-    setFiles(prev => {
-      if (index >= prev.length - 1) return prev;
-      const arr = [...prev];
-      [arr[index], arr[index + 1]] = [arr[index + 1], arr[index]];
-      return arr;
-    });
   };
 
   const handleMerge = async (onProgress: (pct: number, label?: string) => void) => {
@@ -84,91 +69,97 @@ export default function MergeScreen() {
     return outputPath;
   };
 
-  return (
-    <ToolShell
-      title="Merge PDFs"
-      subtitle={`Combine ${files.length} file${files.length !== 1 ? 's' : ''} into one PDF`}
-      onExecute={handleMerge}
-      executeLabel="🔗 Merge PDFs"
-    >
-      <TouchableOpacity
-        style={[styles.pickBtn, { backgroundColor: cardBg, borderColor: accent }]}
-        onPress={handlePickFiles}
-        activeOpacity={0.7}
-        testID="button-pick-files"
-      >
-        <Text style={{ fontSize: 30, marginBottom: 6 }}>📁</Text>
-        <Text style={[styles.pickText, { color: textColor }]}>Add PDF Files</Text>
-        <Text style={[styles.pickHint, { color: muted }]}>Tap to browse and select PDFs</Text>
-      </TouchableOpacity>
-
-      {files.length > 0 && (
-        <View style={styles.listSection}>
-          <View style={styles.listHeader}>
-            <Text style={[styles.label, { color: textColor }]}>
-              📋 Selected Files ({files.length})
-            </Text>
-            <TouchableOpacity onPress={() => setFiles([])} testID="button-clear-all">
-              <Text style={{ color: '#FF3B30', fontSize: 13, fontWeight: '600' }}>Clear All</Text>
-            </TouchableOpacity>
+  const renderItem = ({ item, drag, isActive, getIndex }: RenderItemParams<PdfFile>) => {
+    const index = getIndex() || 0;
+    return (
+      <ScaleDecorator>
+        <View style={[styles.fileItem, { backgroundColor: isActive ? (isDark ? '#333' : '#dcdcdc') : cardBg, borderColor, elevation: isActive ? 10 : 0 }]}>
+          <TouchableOpacity onLongPress={drag} delayLongPress={150} style={styles.dragHandle} activeOpacity={0.7}>
+            <Text style={{ fontSize: 20, color: muted }}>☰</Text>
+          </TouchableOpacity>
+          <View style={styles.fileLeft}>
+            <Text style={{ fontSize: 24, marginRight: 10 }}>📄</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.fileName, { color: textColor }]} numberOfLines={1}>
+                {item.name}
+              </Text>
+              {item.size && (
+                <Text style={[styles.fileSize, { color: muted }]}>{item.size}</Text>
+              )}
+            </View>
           </View>
-          <Text style={[styles.hint, { color: muted }]}>
-            Use ↑↓ to reorder. QPDF merges in listed order.
-          </Text>
-          <FlatList
-            data={files}
-            keyExtractor={(_, i) => String(i)}
-            scrollEnabled={false}
-            renderItem={({ item, index }) => (
-              <View style={[styles.fileItem, { backgroundColor: cardBg, borderColor }]}>
-                <View style={styles.fileLeft}>
-                  <Text style={{ fontSize: 24, marginRight: 10 }}>📄</Text>
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.fileName, { color: textColor }]} numberOfLines={1}>
-                      {item.name}
-                    </Text>
-                    {item.size && (
-                      <Text style={[styles.fileSize, { color: muted }]}>{item.size}</Text>
-                    )}
-                  </View>
-                </View>
-                <View style={styles.fileActions}>
-                  <TouchableOpacity
-                    style={styles.arrowBtn}
-                    onPress={() => handleMoveUp(index)}
-                    testID={`button-move-up-${index}`}
-                  >
-                    <Text style={{ color: accent, fontSize: 16 }}>↑</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.arrowBtn}
-                    onPress={() => handleMoveDown(index)}
-                    testID={`button-move-down-${index}`}
-                  >
-                    <Text style={{ color: accent, fontSize: 16 }}>↓</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.removeBtn}
-                    onPress={() => handleRemoveFile(index)}
-                    testID={`button-remove-file-${index}`}
-                  >
-                    <Text style={{ color: '#FF3B30', fontSize: 16 }}>✕</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
-          />
+          <TouchableOpacity
+            style={styles.removeBtn}
+            onPress={() => handleRemoveFile(index)}
+          >
+            <Text style={{ color: '#FF3B30', fontSize: 16 }}>✕</Text>
+          </TouchableOpacity>
         </View>
-      )}
+      </ScaleDecorator>
+    );
+  };
 
-      {files.length === 0 && (
-        <View style={[styles.emptyState, { borderColor }]}>
-          <Text style={[styles.emptyText, { color: muted }]}>
-            No files selected yet.{'\n'}Add at least 2 PDF files to merge.
-          </Text>
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ToolShell
+        title="Merge PDFs"
+        subtitle={`Combine ${files.length} file${files.length !== 1 ? 's' : ''} into one PDF`}
+        onExecute={handleMerge}
+        executeLabel="🔗 Merge PDFs"
+        disableScroll={true}
+      >
+        <View style={{ paddingHorizontal: 16 }}>
+          <TouchableOpacity
+            style={[styles.pickBtn, { backgroundColor: cardBg, borderColor: accent }]}
+            onPress={handlePickFiles}
+            activeOpacity={0.7}
+          >
+            <Text style={{ fontSize: 30, marginBottom: 6 }}>📁</Text>
+            <Text style={[styles.pickText, { color: textColor }]}>Add PDF Files</Text>
+            <Text style={[styles.pickHint, { color: muted }]}>Tap to browse and select PDFs</Text>
+          </TouchableOpacity>
+
+          {files.length > 0 && (
+            <View style={styles.listHeader}>
+              <Text style={[styles.label, { color: textColor }]}>
+                📋 Selected Files ({files.length})
+              </Text>
+              <TouchableOpacity onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setFiles([]); }}>
+                <Text style={{ color: '#FF3B30', fontSize: 13, fontWeight: '600' }}>Clear All</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {files.length > 0 && (
+            <Text style={[styles.hint, { color: muted }]}>
+              Hold ☰ and drag to reorder. QPDF merges in listed order.
+            </Text>
+          )}
+
+          {files.length === 0 && (
+             <View style={[styles.emptyState, { borderColor }]}>
+               <Text style={[styles.emptyText, { color: muted }]}>
+                 No files selected yet.{'\n'}Add at least 2 PDF files to merge.
+               </Text>
+             </View>
+          )}
         </View>
-      )}
-    </ToolShell>
+
+        {files.length > 0 && (
+          <DraggableFlatList
+            data={files}
+            onDragEnd={({ data }) => {
+              setFiles(data);
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            }}
+            keyExtractor={(_, i) => String(i)}
+            renderItem={renderItem}
+            contentContainerStyle={styles.listContent}
+            containerStyle={{ flex: 1 }}
+          />
+        )}
+      </ToolShell>
+    </GestureHandlerRootView>
   );
 }
 
@@ -180,13 +171,14 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderStyle: 'dashed',
     marginBottom: 16,
+    marginTop: 16,
   },
   pickText: { fontSize: 16, fontWeight: '700', marginBottom: 4 },
   pickHint: { fontSize: 12 },
-  listSection: { flex: 1 },
   listHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
   label: { fontSize: 15, fontWeight: '700' },
   hint: { fontSize: 12, marginBottom: 10 },
+  listContent: { paddingHorizontal: 16, paddingBottom: 20 },
   fileItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -195,12 +187,11 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     borderWidth: 1,
   },
+  dragHandle: { padding: 8, marginRight: 6 },
   fileLeft: { flex: 1, flexDirection: 'row', alignItems: 'center' },
   fileName: { fontSize: 14, fontWeight: '500' },
   fileSize: { fontSize: 11, marginTop: 2 },
-  fileActions: { flexDirection: 'row', gap: 8 },
-  arrowBtn: { padding: 6 },
-  removeBtn: { padding: 6 },
+  removeBtn: { padding: 10 },
   emptyState: {
     padding: 30,
     borderRadius: 12,

@@ -78,11 +78,11 @@ function getLanguageInstruction(lang: OcrLanguage): string {
     case 'Bengali':
       return 'ডকুমেন্টের মূল ভাষা বাংলা। স্পেলিং এবং যুক্তবর্ণ স্ক্যান করা ইমেজের মতো হুবহু সংরক্ষণ করতে হবে।';
     case 'English':
-      return 'The primary language of this document is English. Preserve English text with exact accuracy.';
+      return 'ডকুমেন্টের মূল ভাষা ইংরেজি। ইংরেজি টেক্সট নির্ভুলভাবে সংরক্ষণ করতে হবে।';
     case 'Arabic':
-      return 'ﺍﻟﻠﻐﺔ ﺍﻷﺳﺎﺳﻴﺔ ﻟﻠﻮﺛﻴﻘﺔ ﻫﻲ ﺍﻟﻌﺮﺑﻴﺔ. Preserve Arabic text exactly, do not add any extra words.';
+      return 'ডকুমেন্টের মূল ভাষা আরবি। আরবি টেক্সট হুবহু রাখতে হবে, কোনো অতিরিক্ত শব্দ যোগ করা যাবে না।';
     case 'Mixed':
-      return 'ডকুমেন্টে বাংলা, ইংরেজি এবং আরবি থাকতে পারে। কোনো অনুবাদ করা যাবে না। প্রতিটি ভাষা হুবহু সংরক্ষণ করতে হবে।';
+      return 'ডকুমেন্টে বাংলা, ইংরেজি এবং আরবি থাকতে পারে। কোনো অনুবাদ (Translate) করা যাবে না। প্রতিটি ভাষা হুবহু সংরক্ষণ করতে হবে।';
     default:
       return '';
   }

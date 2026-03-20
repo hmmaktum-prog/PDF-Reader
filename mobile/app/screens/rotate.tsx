@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, TextInput, Alert } from 'react-native';
 import ToolShell from '../components/ToolShell';
 import { useAppTheme } from '../context/ThemeContext';
-import { rotatePdf } from '../utils/nativeModules';
+import { rotatePdf, renderPageToImage } from '../utils/nativeModules';
 import { pickSinglePdf } from '../utils/filePicker';
+import * as FileSystem from 'expo-file-system';
+import { Image, ActivityIndicator } from 'react-native';
 
 const ANGLES = [
   { deg: 90 as const, label: '↻ 90°', hint: 'Clockwise' },
@@ -18,6 +20,8 @@ export default function RotateScreen() {
   const [pageRange, setPageRange] = useState('1, 3, 5');
   const [selectedFile, setSelectedFile] = useState('');
   const [selectedFileName, setSelectedFileName] = useState('');
+  const [previewUri, setPreviewUri] = useState<string | null>(null);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
 
   const handlePickFile = async () => {
     try {
@@ -25,6 +29,7 @@ export default function RotateScreen() {
       if (!picked) return;
       setSelectedFile(picked.path);
       setSelectedFileName(picked.name);
+      setPreviewUri(null);
     } catch (e: any) {
       Alert.alert('File Picker Error', e.message);
     }
@@ -36,6 +41,20 @@ export default function RotateScreen() {
   const borderColor = isDark ? '#444' : '#ccc';
   const accent = '#5AC8FA';
   const muted = isDark ? '#888' : '#999';
+
+  const loadPreview = async () => {
+    if (!selectedFile) return;
+    try {
+      setIsLoadingPreview(true);
+      const outPath = `${FileSystem.cacheDirectory}preview_${Date.now()}.jpg`;
+      await renderPageToImage(selectedFile, 0, outPath, false);
+      setPreviewUri(`file://${outPath}`);
+    } catch (e: any) {
+      Alert.alert('Preview Error', e.message);
+    } finally {
+      setIsLoadingPreview(false);
+    }
+  };
 
   const handleRotate = async (onProgress: (pct: number, label?: string) => void) => {
     if (!selectedFile) throw new Error('প্রথমে একটি PDF ফাইল নির্বাচন করুন');
@@ -73,10 +92,25 @@ export default function RotateScreen() {
       <View style={[styles.previewBox, { backgroundColor: cardBg }]}>
         <Text style={[styles.sectionLabel, { color: textColor }]}>👁 Preview</Text>
         <View style={{ alignItems: 'center', paddingVertical: 20 }}>
-          <View style={[styles.pageMock, { borderColor, transform: [{ rotate: `${angle}deg` }] }]}>
-            <Text style={{ color: muted, fontSize: 11 }}>Page</Text>
-            <Text style={{ fontSize: 22 }}>📄</Text>
-          </View>
+          {selectedFile ? (
+            previewUri ? (
+              <Image 
+                source={{ uri: previewUri }} 
+                style={{ width: 140, height: 200, resizeMode: 'contain', transform: [{ rotate: `${angle}deg` }], borderWidth: 1, borderColor }} 
+              />
+            ) : isLoadingPreview ? (
+              <ActivityIndicator size="large" color={accent} />
+            ) : (
+              <TouchableOpacity style={{ padding: 12, borderWidth: 1, borderColor: accent, borderRadius: 8 }} onPress={loadPreview}>
+                <Text style={{ color: accent, fontWeight: '600' }}>Load Live Preview</Text>
+              </TouchableOpacity>
+            )
+          ) : (
+            <View style={[styles.pageMock, { borderColor, transform: [{ rotate: `${angle}deg` }] }]}>
+              <Text style={{ color: muted, fontSize: 11 }}>Page</Text>
+              <Text style={{ fontSize: 22 }}>📄</Text>
+            </View>
+          )}
           <Text style={[styles.hint, { color: muted, marginTop: 12 }]}>
             Page shown rotated {angle}° clockwise
           </Text>

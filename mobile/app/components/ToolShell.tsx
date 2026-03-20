@@ -7,10 +7,12 @@ import {
   ActivityIndicator,
   Share,
   ScrollView,
-  Platform,
+  Platform
 } from 'react-native';
 import { useAppTheme } from '../context/ThemeContext';
 import { useContinueTool } from '../context/ContinueContext';
+import * as Haptics from 'expo-haptics';
+import { cleanupTemporaryFiles } from '../utils/cleanup';
 
 export type ToolStatus = 'idle' | 'processing' | 'result' | 'error';
 
@@ -21,6 +23,7 @@ interface ToolShellProps {
   executeLabel?: string;
   children?: React.ReactNode;
   resultLabel?: string;
+  disableScroll?: boolean;
 }
 
 export default function ToolShell({
@@ -30,6 +33,7 @@ export default function ToolShell({
   executeLabel = '▶ Execute Tool',
   children,
   resultLabel,
+  disableScroll = false,
 }: ToolShellProps) {
   const { isDark } = useAppTheme();
   const { setSharedFilePath } = useContinueTool();
@@ -46,6 +50,7 @@ export default function ToolShell({
 
   const handleExecute = async () => {
     try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       setStatus('processing');
       setProgress(0);
       setProgressLabel('NDK engine initializing...');
@@ -54,13 +59,18 @@ export default function ToolShell({
       setProgress(100);
       setProgressLabel('Done!');
       setStatus('result');
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (e: any) {
       setErrorMsg(e.message || 'An unexpected error occurred');
       setStatus('error');
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    } finally {
+      cleanupTemporaryFiles().catch(() => {});
     }
   };
 
   const handleContinue = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     if (resultPath) {
       setSharedFilePath(resultPath);
     }
@@ -81,6 +91,7 @@ export default function ToolShell({
   };
 
   const handleReset = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setStatus('idle');
     setProgress(0);
     setProgressLabel('');
@@ -104,9 +115,15 @@ export default function ToolShell({
 
       {status === 'idle' && (
         <View style={styles.flex}>
-          <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
-            {children}
-          </ScrollView>
+          {disableScroll ? (
+            <View style={styles.scrollContent}>
+              {children}
+            </View>
+          ) : (
+            <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+              {children}
+            </ScrollView>
+          )}
           <View style={[styles.footer, { backgroundColor: cardBg, borderTopColor: isDark ? '#333' : '#e8e8e8' }]}>
             <TouchableOpacity
               style={[styles.button, { backgroundColor: accent }]}
