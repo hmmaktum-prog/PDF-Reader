@@ -131,11 +131,12 @@ PC
 
     cmake --build . -j"$(nproc)"
 
-    if [[ ! -f "libqpdf.so" ]]; then
+    QPDF_SO=$(find . -name 'libqpdf.so' 2>/dev/null | head -1 || true)
+    if [[ -z "$QPDF_SO" ]]; then
       echo "ERROR: libqpdf.so not found for $ABI" >&2; exit 1
     fi
     mkdir -p "$THIRD_PARTY/qpdf/libs/$ABI"
-    cp -v libqpdf.so "$THIRD_PARTY/qpdf/libs/$ABI/"
+    cp -v "$QPDF_SO" "$THIRD_PARTY/qpdf/libs/$ABI/"
     cp -v "$LIBJPEG_INSTALL/lib/libjpeg.so" "$THIRD_PARTY/qpdf/libs/$ABI/" 2>/dev/null || true
     popd > /dev/null
     echo "QPDF ✓"
