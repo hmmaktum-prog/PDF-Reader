@@ -35,7 +35,7 @@ export default function SettingsScreen() {
 
   const loadGeminiKey = async () => {
     try {
-      const key = await AsyncStorage.getItem('GEMINI_API_KEY');
+      const key = await AsyncStorage.getItem('gemini_api_key');
       setHasGeminiKey(!!key);
       if (key) {
         setGeminiKey(key);
@@ -51,7 +51,7 @@ export default function SettingsScreen() {
       return;
     }
     try {
-      await AsyncStorage.setItem('GEMINI_API_KEY', geminiKey.trim());
+      await AsyncStorage.setItem('gemini_api_key', geminiKey.trim());
       setHasGeminiKey(true);
       setShowGeminiModal(false);
       Alert.alert('Success', 'Gemini API key saved');
@@ -68,7 +68,7 @@ export default function SettingsScreen() {
         text: 'Remove',
         onPress: async () => {
           try {
-            await AsyncStorage.removeItem('GEMINI_API_KEY');
+            await AsyncStorage.removeItem('gemini_api_key');
             setHasGeminiKey(false);
             setGeminiKey('');
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);

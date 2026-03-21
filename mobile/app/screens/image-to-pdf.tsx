@@ -43,7 +43,7 @@ export default function ImageToPdfScreen() {
   const handlePickImages = async () => {
     try {
       let result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         allowsMultipleSelection: true,
         quality: 1,
       });
@@ -83,7 +83,7 @@ export default function ImageToPdfScreen() {
     
     // Pass margins and orientation to module
     const mPx = MARGINS.find(m => m.id === margin)?.points || 0;
-    await imagesToPdf(images.map(i => ({ uri: i.uri, rot: i.rotation })), outputPath, pageSize, orientation, mPx);
+    await imagesToPdf(images.map(i => ({ uri: i.uri, rotation: i.rotation })), outputPath, pageSize, orientation, mPx);
     
     onProgress(80, 'Finalizing document structure...');
     await new Promise(r => setTimeout(r, 300));

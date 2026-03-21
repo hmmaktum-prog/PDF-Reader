@@ -52,6 +52,7 @@ export default function SplitScreen() {
 
   const handleSplit = async (onProgress: (pct: number, label?: string) => void) => {
     if (!selectedFile) throw new Error('Please select a PDF file first');
+    await ensureOutputDir();
     const outputDir = getOutputPath('split_output');
     onProgress(10, 'Opening PDF with QPDF...');
     await new Promise(r => setTimeout(r, 300));

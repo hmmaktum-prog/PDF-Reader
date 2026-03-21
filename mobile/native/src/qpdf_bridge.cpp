@@ -28,10 +28,14 @@ Java_com_pdfpowertools_native_QPDFBridge_compressPdf(
         JNIEnv* env,
         jobject /* this */,
         jstring inputPath,
-        jstring outputPath) {
+        jstring outputPath,
+        jstring level,
+        jint imgQuality,
+        jint resScale,
+        jboolean grayscale) {
     LOGI("Executing QPDF Compress");
     // TODO: Load PDF, configure Object Streams & Compress, write out.
-    return JNI_TRUE;
+    return JNI_FALSE;
 }
 
 // ─── Split PDF ───────────────────────────────────────────────
@@ -44,7 +48,7 @@ Java_com_pdfpowertools_native_QPDFBridge_splitPdf(
         jstring ranges) {
     LOGI("Executing QPDF Split");
     // TODO: Parse ranges (e.g. "1-3,4-5"), clone document, extract pages
-    return JNI_TRUE;
+    return JNI_FALSE;
 }
 
 // ─── Rotate PDF ──────────────────────────────────────────────
@@ -59,7 +63,7 @@ Java_com_pdfpowertools_native_QPDFBridge_rotatePdf(
     LOGI("Executing QPDF Rotate (angle=%d)", angle);
     // TODO: Iterate page objects, set /Rotate to angle for specified pages
     // pages = "all" means rotate every page, otherwise parse "1,3,5" or "1-3"
-    return JNI_TRUE;
+    return JNI_FALSE;
 }
 
 // ─── Repair (Rebuild) PDF ────────────────────────────────────
@@ -68,10 +72,11 @@ Java_com_pdfpowertools_native_QPDFBridge_repairPdf(
         JNIEnv* env,
         jobject /* this */,
         jstring inputPath,
-        jstring outputPath) {
+        jstring outputPath,
+        jstring password) {
     LOGI("Executing QPDF Repair");
     // TODO: Open with QPDF in recovery mode, re-linearize, write clean copy
-    return JNI_TRUE;
+    return JNI_FALSE;
 }
 
 // ─── Decrypt PDF ─────────────────────────────────────────────
@@ -84,7 +89,7 @@ Java_com_pdfpowertools_native_QPDFBridge_decryptPdf(
         jstring password) {
     LOGI("Executing QPDF Decrypt");
     // TODO: Open PDF with password, write decrypted copy (no encryption)
-    return JNI_TRUE;
+    return JNI_FALSE;
 }
 
 // ─── Reorder Pages ───────────────────────────────────────────
@@ -97,7 +102,7 @@ Java_com_pdfpowertools_native_QPDFBridge_reorderPages(
         jstring newOrder) {
     LOGI("Executing QPDF Reorder Pages");
     // TODO: Parse newOrder (e.g. "3,1,2,5,4"), reorder page objects accordingly
-    return JNI_TRUE;
+    return JNI_FALSE;
 }
 
 // ─── Remove Pages ────────────────────────────────────────────
@@ -110,7 +115,7 @@ Java_com_pdfpowertools_native_QPDFBridge_removePages(
         jstring pagesToRemove) {
     LOGI("Executing QPDF Remove Pages");
     // TODO: Parse pagesToRemove (e.g. "2,5,7"), remove those page objects
-    return JNI_TRUE;
+    return JNI_FALSE;
 }
 
 // ─── Resize PDF Pages ────────────────────────────────────────
@@ -121,11 +126,14 @@ Java_com_pdfpowertools_native_QPDFBridge_resizePdf(
         jstring inputPath,
         jstring outputPath,
         jint widthPts,
-        jint heightPts) {
+        jint heightPts,
+        jint scale,
+        jstring alignH,
+        jstring alignV) {
     LOGI("Executing QPDF Resize (w=%d, h=%d)", widthPts, heightPts);
     // TODO: Open PDF, iterate page objects, set MediaBox to [0 0 widthPts heightPts]
     //       Scale existing content using cm() transformation matrix
-    return JNI_TRUE;
+    return JNI_FALSE;
 }
 
 // ─── N-Up Layout ─────────────────────────────────────────────
@@ -136,11 +144,12 @@ Java_com_pdfpowertools_native_QPDFBridge_nupLayout(
         jstring inputPath,
         jstring outputPath,
         jint cols,
-        jint rows) {
+        jint rows,
+        jstring sequence) {
     LOGI("Executing QPDF N-Up Layout (cols=%d, rows=%d)", cols, rows);
     // TODO: Group pages into sets of (cols*rows), arrange them via XObjects
     //       Each group placed on a single output page with scaled content streams
-    return JNI_TRUE;
+    return JNI_FALSE;
 }
 
 // ─── Create Booklet ──────────────────────────────────────────
@@ -150,12 +159,13 @@ Java_com_pdfpowertools_native_QPDFBridge_createBooklet(
         jobject /* this */,
         jstring inputPath,
         jstring outputPath,
-        jstring binding) {
+        jstring binding,
+        jboolean autoPadding) {
     LOGI("Executing QPDF Create Booklet");
     // TODO: Reorder pages for booklet printing:
     //       Saddle-stitch: N, 1, 2, N-1, N-2, 3, 4, N-3...
     //       Place 2 pages per sheet using XObject placement
-    return JNI_TRUE;
+    return JNI_FALSE;
 }
 
 // ─── 4-Up Booklet ────────────────────────────────────────────
@@ -169,7 +179,7 @@ Java_com_pdfpowertools_native_QPDFBridge_fourUpBooklet(
     LOGI("Executing QPDF 4-Up Booklet");
     // TODO: Similar to booklet but 4 pages per sheet (2x2 layout)
     //       Fold in both directions → 4 readable pages
-    return JNI_TRUE;
+    return JNI_FALSE;
 }
 
 // ─── Images to PDF ───────────────────────────────────────────
@@ -178,9 +188,11 @@ Java_com_pdfpowertools_native_QPDFBridge_imagesToPdf(
         JNIEnv* env,
         jobject /* this */,
         jstring imagePaths,
+        jstring rotations,
         jstring outputPath,
         jstring pageSize,
-        jboolean addMargin) {
+        jstring orientation,
+        jint marginPts) {
     LOGI("Executing QPDF Images to PDF");
     // TODO: Parse comma-separated imagePaths, create PDF page for each image
     //       Set MediaBox based on pageSize ("A4"=595×842, "Letter"=612×792, "Fit"=image dims)

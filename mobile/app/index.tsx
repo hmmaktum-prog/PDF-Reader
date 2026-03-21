@@ -100,7 +100,7 @@ export default function HomeScreen() {
           >
             <View style={styles.heroGrid} />
 
-            <View style={{ flexDirection: 'row', gap: 8 }}>
+            <View style={{ flexDirection: 'row', gap: 8, position: 'absolute', top: 16, right: 16, zIndex: 1 }}>
               <TouchableOpacity style={styles.themeBtn} onPress={cycleTheme} testID="button-theme-toggle">
                 <Text style={styles.themeBtnText}>{themeIcon}</Text>
               </TouchableOpacity>
@@ -293,11 +293,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   themeBtn: {
-    position: 'absolute', top: 16, right: 16,
     backgroundColor: '#ffffff18',
     borderRadius: 22, padding: 8,
     borderWidth: 1, borderColor: '#ffffff22',
-    zIndex: 1,
   },
   themeBtnText: { fontSize: 16 },
 

@@ -27,7 +27,11 @@ object QPDFBridge {
     // PDF Compression
     external fun compressPdf(
         inputPath: String,
-        outputPath: String
+        outputPath: String,
+        level: String,
+        imgQuality: Int,
+        resScale: Int,
+        grayscale: Boolean
     ): Boolean
 
     // PDF Rotation
@@ -41,7 +45,8 @@ object QPDFBridge {
     // PDF Repair/Rebuild
     external fun repairPdf(
         inputPath: String,
-        outputPath: String
+        outputPath: String,
+        password: String
     ): Boolean
 
     // PDF Decryption
@@ -70,7 +75,10 @@ object QPDFBridge {
         inputPath: String,
         outputPath: String,
         widthPts: Int,
-        heightPts: Int
+        heightPts: Int,
+        scale: Int,
+        alignH: String,
+        alignV: String
     ): Boolean
 
     // N-Up Layout
@@ -78,14 +86,16 @@ object QPDFBridge {
         inputPath: String,
         outputPath: String,
         cols: Int,
-        rows: Int
+        rows: Int,
+        sequence: String
     ): Boolean
 
     // Create Booklet
     external fun createBooklet(
         inputPath: String,
         outputPath: String,
-        binding: String
+        binding: String,
+        autoPadding: Boolean
     ): Boolean
 
     // 4-Up Booklet
@@ -98,8 +108,10 @@ object QPDFBridge {
     // Images to PDF
     external fun imagesToPdf(
         imagePaths: String,
+        rotations: String,
         outputPath: String,
         pageSize: String,
-        addMargin: Boolean
+        orientation: String,
+        marginPts: Int
     ): Boolean
 }

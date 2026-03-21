@@ -4,7 +4,7 @@ import ToolShell from '../components/ToolShell';
 import { useAppTheme } from '../context/ThemeContext';
 import { grayscalePdf, renderPageToImage } from '../utils/nativeModules';
 import { pickSinglePdf } from '../utils/filePicker';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { Image, ActivityIndicator } from 'react-native';
 import { getOutputPath, ensureOutputDir } from '../utils/outputPath';
 
@@ -47,7 +47,7 @@ export default function GrayscaleScreen() {
     }
   };
 
-  const handleAction = async (onProgress) => {
+  const handleAction = async (onProgress: (pct: number, label?: string) => void) => {
     if (!selectedFile) throw new Error('Please select a PDF file first');
     await ensureOutputDir();
     const outputPath = getOutputPath('grayscale_output.pdf');

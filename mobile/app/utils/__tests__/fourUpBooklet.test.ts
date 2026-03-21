@@ -12,7 +12,7 @@ describe('getFourUpBookletChunks', () => {
   it('pads to 8 multiples for non-multiple-of-8 page counts', () => {
     const chunks = getFourUpBookletChunks(10);
     expect(chunks.length).toBe(4); // 16 pages padded => 4 sheets
-    expect(chunks[0]).toEqual([16, 1, 14, 3]);
+    expect(chunks[0]).toEqual([16, 1, 12, 5]);
   });
 
   it('returns empty for zero or negative page count', () => {

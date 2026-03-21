@@ -4,7 +4,7 @@ import ToolShell from '../components/ToolShell';
 import { useAppTheme } from '../context/ThemeContext';
 import { rotatePdf, renderPageToImage } from '../utils/nativeModules';
 import { pickSinglePdf } from '../utils/filePicker';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { Image, ActivityIndicator } from 'react-native';
 import { getOutputPath, ensureOutputDir } from '../utils/outputPath';
 

@@ -40,4 +40,4 @@ externalPort = 3001
 [userenv]
 
 [userenv.shared]
-Expo_TOKEN = "6q4MBHpuHb-fdRbhptOxReL06U-OdJizK4at6g3T"
+Expo_TOKEN = ""

@@ -21,7 +21,7 @@ Java_com_pdfpowertools_native_MuPDFBridge_renderPdfToImage(
     // TODO: Init fitz context, open document, seek to page,
     //       render to pixmap at specified DPI (highRes=300dpi, normal=150dpi),
     //       encode as JPEG/PNG based on outputPath extension
-    return JNI_TRUE;
+    return JNI_FALSE;
 }
 
 // ─── Get Page Count ──────────────────────────────────────────
@@ -33,7 +33,7 @@ Java_com_pdfpowertools_native_MuPDFBridge_getPageCount(
         jstring password) {
     LOGI("Executing MuPDF Get Page Count");
     // TODO: Init fitz context, authenticate if encrypted, return fz_count_pages
-    return 1; // stub
+    return 0; // stub
 }
 
 // ─── Batch Render All Pages ──────────────────────────────────
@@ -50,7 +50,7 @@ Java_com_pdfpowertools_native_MuPDFBridge_batchRenderPages(
     //       with naming convention page_N.{format}
     //       Use fz_pixmap and encode based on format (jpeg/png)
     //       quality parameter affects JPEG compression (1-100)
-    return JNI_TRUE;
+    return JNI_FALSE;
 }
 
 // ─── Get Page Dimensions ─────────────────────────────────────
@@ -79,7 +79,7 @@ Java_com_pdfpowertools_native_MuPDFBridge_grayscalePdf(
     // TODO: Render each page to fz_pixmap with FZ_COLORSPACE_GRAY
     //       Encode pixmap to image, rebuild PDF via QPDF
     //       Alternatively: use DeviceGray colorspace directly on vector content
-    return JNI_TRUE;
+    return JNI_FALSE;
 }
 
 // ─── Whitening (Background Removal) ──────────────────────────
@@ -95,7 +95,7 @@ Java_com_pdfpowertools_native_MuPDFBridge_whiteningPdf(
     //       Threshold levels: 1=light(220), 2=medium(200), 3=strong(180)
     //       Pixels > threshold mapped to 255 (white), rest kept
     //       Rebuild PDF from processed images
-    return JNI_TRUE;
+    return JNI_FALSE;
 }
 
 // ─── Enhance Contrast ────────────────────────────────────────
@@ -110,7 +110,7 @@ Java_com_pdfpowertools_native_MuPDFBridge_enhanceContrastPdf(
     // TODO: Render each page via MuPDF, apply gamma correction + histogram stretch
     //       Level 1-5 maps to gamma 0.9..0.5 and black-point shift 0..40
     //       Use fz_pixmap pixel manipulation then rebuild PDF
-    return JNI_TRUE;
+    return JNI_FALSE;
 }
 
 // ─── Invert Colors ───────────────────────────────────────────
@@ -124,5 +124,17 @@ Java_com_pdfpowertools_native_MuPDFBridge_invertColorsPdf(
     // TODO: Render each page via MuPDF, invert pixel values (pixel = 255 - pixel)
     //       Preserve alpha channel for transparency
     //       Rebuild PDF from inverted images
-    return JNI_TRUE;
+    return JNI_FALSE;
+}
+
+// ─── AI Whitening ─────────────────────────────────────────────
+extern "C" JNIEXPORT jboolean JNICALL
+Java_com_pdfpowertools_native_MuPDFBridge_geminiAiWhitening(
+        JNIEnv* env,
+        jobject /* this */,
+        jstring inputPath,
+        jstring outputPath) {
+    LOGI("Executing MuPDF Gemini AI Whitening");
+    // TODO: Apply AI-assisted background cleanup and write output PDF
+    return JNI_FALSE;
 }

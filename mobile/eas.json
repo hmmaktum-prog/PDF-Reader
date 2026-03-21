@@ -10,12 +10,18 @@
       "android": {
         "buildType": "apk",
         "gradleCommand": ":app:assembleDebug"
+      },
+      "env": {
+        "EAS_PACKAGE_MANAGER": "pnpm"
       }
     },
     "preview": {
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EAS_PACKAGE_MANAGER": "pnpm"
       }
     },
     "production": {
@@ -23,7 +29,8 @@
         "buildType": "apk"
       },
       "env": {
-        "NODE_ENV": "production"
+        "NODE_ENV": "production",
+        "EAS_PACKAGE_MANAGER": "pnpm"
       }
     }
   },

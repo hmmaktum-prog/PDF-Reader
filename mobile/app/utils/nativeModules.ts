@@ -6,12 +6,43 @@
  */
 import { NativeModules, Platform } from 'react-native';
 
-const QPDFBridge = NativeModules.QPDFBridge;
-const MuPDFBridge = NativeModules.MuPDFBridge;
+const QPDFBridge: any = NativeModules.QPDFBridge ?? {
+  mergePdfs: () => '',
+  splitPdf: () => false,
+  compressPdf: () => false,
+  rotatePdf: () => false,
+  repairPdf: () => false,
+  decryptPdf: () => false,
+  reorderPages: () => false,
+  removePages: () => false,
+  resizePdf: () => false,
+  nupLayout: () => false,
+  createBooklet: () => false,
+  fourUpBooklet: () => false,
+  imagesToPdf: () => false,
+};
+
+const MuPDFBridge: any = NativeModules.MuPDFBridge ?? {
+  getPageCount: () => 0,
+  renderPdfToImage: () => false,
+  batchRenderPages: () => false,
+  getPageDimensions: () => [595, 842],
+  grayscalePdf: () => false,
+  whiteningPdf: () => false,
+  enhanceContrastPdf: () => false,
+  invertColorsPdf: () => false,
+  geminiAiWhitening: () => false,
+};
 
 function ensureAndroid(name: string): void {
   if (Platform.OS !== 'android') {
     throw new Error(`${name} is only available on Android (NDK)`);
+  }
+}
+
+function assertNativeSuccess(operation: string, ok: boolean): void {
+  if (!ok) {
+    throw new Error(`${operation} failed in native layer`);
   }
 }
 
@@ -25,17 +56,32 @@ export async function mergePdfs(
   invertColors: boolean = false
 ): Promise<string> {
   ensureAndroid('mergePdfs');
-  return await QPDFBridge.mergePdfs(inputPaths.join(','), outputPath, invertColors);
+  const result = await QPDFBridge.mergePdfs(inputPaths.join(','), outputPath, invertColors);
+  if (!result || result.includes('Stub - Pending')) {
+    throw new Error('mergePdfs is not implemented in native layer yet');
+  }
+  return result;
 }
 
 export async function splitPdf(inputPath: string, outputDir: string, ranges: string): Promise<boolean> {
   ensureAndroid('splitPdf');
-  return await QPDFBridge.splitPdf(inputPath, outputDir, ranges);
+  const ok = await QPDFBridge.splitPdf(inputPath, outputDir, ranges);
+  assertNativeSuccess('splitPdf', ok);
+  return ok;
 }
 
-export async function compressPdf(inputPath: string, outputPath: string): Promise<boolean> {
+export async function compressPdf(
+  inputPath: string,
+  outputPath: string,
+  level: string = 'Balanced',
+  imgQuality: number = 70,
+  resScale: number = 100,
+  grayscale: boolean = false
+): Promise<boolean> {
   ensureAndroid('compressPdf');
-  return await QPDFBridge.compressPdf(inputPath, outputPath);
+  const ok = await QPDFBridge.compressPdf(inputPath, outputPath, level, imgQuality, resScale, grayscale);
+  assertNativeSuccess('compressPdf', ok);
+  return ok;
 }
 
 export async function rotatePdf(
@@ -45,56 +91,77 @@ export async function rotatePdf(
   pages?: string // e.g. "1-3,5" or undefined for all
 ): Promise<boolean> {
   ensureAndroid('rotatePdf');
-  return await QPDFBridge.rotatePdf(inputPath, outputPath, angle, pages || 'all');
+  const ok = await QPDFBridge.rotatePdf(inputPath, outputPath, angle, pages || 'all');
+  assertNativeSuccess('rotatePdf', ok);
+  return ok;
 }
 
-export async function repairPdf(inputPath: string, outputPath: string): Promise<boolean> {
+export async function repairPdf(inputPath: string, outputPath: string, password: string = ''): Promise<boolean> {
   ensureAndroid('repairPdf');
-  return await QPDFBridge.repairPdf(inputPath, outputPath);
+  const ok = await QPDFBridge.repairPdf(inputPath, outputPath, password);
+  assertNativeSuccess('repairPdf', ok);
+  return ok;
 }
 
 export async function decryptPdf(inputPath: string, outputPath: string, password: string): Promise<boolean> {
   ensureAndroid('decryptPdf');
-  return await QPDFBridge.decryptPdf(inputPath, outputPath, password);
+  const ok = await QPDFBridge.decryptPdf(inputPath, outputPath, password);
+  assertNativeSuccess('decryptPdf', ok);
+  return ok;
 }
 
 export async function reorderPages(inputPath: string, outputPath: string, newOrder: number[]): Promise<boolean> {
   ensureAndroid('reorderPages');
-  return await QPDFBridge.reorderPages(inputPath, outputPath, newOrder.join(','));
+  const ok = await QPDFBridge.reorderPages(inputPath, outputPath, newOrder.join(','));
+  assertNativeSuccess('reorderPages', ok);
+  return ok;
 }
 
 export async function removePages(inputPath: string, outputPath: string, pagesToRemove: number[]): Promise<boolean> {
   ensureAndroid('removePages');
-  return await QPDFBridge.removePages(inputPath, outputPath, pagesToRemove.join(','));
+  const ok = await QPDFBridge.removePages(inputPath, outputPath, pagesToRemove.join(','));
+  assertNativeSuccess('removePages', ok);
+  return ok;
 }
 
 export async function resizePdf(
   inputPath: string,
   outputPath: string,
   widthPts: number,
-  heightPts: number
+  heightPts: number,
+  scale: number = 100,
+  alignH: string = 'center',
+  alignV: string = 'middle'
 ): Promise<boolean> {
   ensureAndroid('resizePdf');
-  return await QPDFBridge.resizePdf(inputPath, outputPath, widthPts, heightPts);
+  const ok = await QPDFBridge.resizePdf(inputPath, outputPath, widthPts, heightPts, scale, alignH, alignV);
+  assertNativeSuccess('resizePdf', ok);
+  return ok;
 }
 
 export async function nupLayout(
   inputPath: string,
   outputPath: string,
   cols: number,
-  rows: number
+  rows: number,
+  sequence: string = 'Z'
 ): Promise<boolean> {
   ensureAndroid('nupLayout');
-  return await QPDFBridge.nupLayout(inputPath, outputPath, cols, rows);
+  const ok = await QPDFBridge.nupLayout(inputPath, outputPath, cols, rows, sequence);
+  assertNativeSuccess('nupLayout', ok);
+  return ok;
 }
 
 export async function createBooklet(
   inputPath: string,
   outputPath: string,
-  binding: string
+  binding: string,
+  autoPadding: boolean = true
 ): Promise<boolean> {
   ensureAndroid('createBooklet');
-  return await QPDFBridge.createBooklet(inputPath, outputPath, binding);
+  const ok = await QPDFBridge.createBooklet(inputPath, outputPath, binding, autoPadding);
+  assertNativeSuccess('createBooklet', ok);
+  return ok;
 }
 
 export async function fourUpBooklet(
@@ -103,17 +170,25 @@ export async function fourUpBooklet(
   orientation: string
 ): Promise<boolean> {
   ensureAndroid('fourUpBooklet');
-  return await QPDFBridge.fourUpBooklet(inputPath, outputPath, orientation);
+  const ok = await QPDFBridge.fourUpBooklet(inputPath, outputPath, orientation);
+  assertNativeSuccess('fourUpBooklet', ok);
+  return ok;
 }
 
 export async function imagesToPdf(
-  imagePaths: string[],
+  imageData: { uri: string; rotation: number }[] | string[],
   outputPath: string,
   pageSize: string,
-  addMargin: boolean
+  orientation: string = 'portrait',
+  marginPts: number = 0
 ): Promise<boolean> {
   ensureAndroid('imagesToPdf');
-  return await QPDFBridge.imagesToPdf(imagePaths.join(','), outputPath, pageSize, addMargin);
+  // Support both string[] and object[] formats
+  const paths = imageData.map((item) => typeof item === 'string' ? item : item.uri);
+  const rotations = imageData.map((item) => typeof item === 'string' ? 0 : item.rotation);
+  const ok = await QPDFBridge.imagesToPdf(paths.join(','), rotations.join(','), outputPath, pageSize, orientation, marginPts);
+  assertNativeSuccess('imagesToPdf', ok);
+  return ok;
 }
 
 // ──────────────────────────────────────────────
@@ -122,7 +197,9 @@ export async function imagesToPdf(
 
 export async function grayscalePdf(inputPath: string, outputPath: string): Promise<boolean> {
   ensureAndroid('grayscalePdf');
-  return await MuPDFBridge.grayscalePdf(inputPath, outputPath);
+  const ok = await MuPDFBridge.grayscalePdf(inputPath, outputPath);
+  assertNativeSuccess('grayscalePdf', ok);
+  return ok;
 }
 
 export async function whiteningPdf(
@@ -131,7 +208,9 @@ export async function whiteningPdf(
   strength: number
 ): Promise<boolean> {
   ensureAndroid('whiteningPdf');
-  return await MuPDFBridge.whiteningPdf(inputPath, outputPath, strength);
+  const ok = await MuPDFBridge.whiteningPdf(inputPath, outputPath, strength);
+  assertNativeSuccess('whiteningPdf', ok);
+  return ok;
 }
 
 export async function enhanceContrastPdf(
@@ -140,12 +219,23 @@ export async function enhanceContrastPdf(
   level: number
 ): Promise<boolean> {
   ensureAndroid('enhanceContrastPdf');
-  return await MuPDFBridge.enhanceContrastPdf(inputPath, outputPath, level);
+  const ok = await MuPDFBridge.enhanceContrastPdf(inputPath, outputPath, level);
+  assertNativeSuccess('enhanceContrastPdf', ok);
+  return ok;
 }
 
 export async function invertColorsPdf(inputPath: string, outputPath: string): Promise<boolean> {
   ensureAndroid('invertColorsPdf');
-  return await MuPDFBridge.invertColorsPdf(inputPath, outputPath);
+  const ok = await MuPDFBridge.invertColorsPdf(inputPath, outputPath);
+  assertNativeSuccess('invertColorsPdf', ok);
+  return ok;
+}
+
+export async function geminiAiWhitening(inputPath: string, outputPath: string): Promise<boolean> {
+  ensureAndroid('geminiAiWhitening');
+  const ok = await MuPDFBridge.geminiAiWhitening(inputPath, outputPath);
+  assertNativeSuccess('geminiAiWhitening', ok);
+  return ok;
 }
 
 // ──────────────────────────────────────────────
@@ -172,9 +262,11 @@ export async function batchRenderPages(
   outputDir: string,
   format: 'jpeg' | 'png',
   quality: number,
-  onProgress?: (page: number, total: number) => void
+  onProgressOrOutputMode?: ((page: number, total: number) => void) | string
 ): Promise<string[]> {
   ensureAndroid('batchRenderPages');
+  // Support both callback and outputMode string for flexibility
+  const onProgress = typeof onProgressOrOutputMode === 'function' ? onProgressOrOutputMode : undefined;
   const totalPages = await getPageCount(inputPath);
   const results: string[] = [];
   const ext = format === 'png' ? '.png' : '.jpg';

@@ -16,7 +16,23 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme } from './context/ThemeContext';
 import * as Haptics from 'expo-haptics';
 
-const TOOL_SECTIONS = [
+export type ToolItem = {
+  id: string;
+  name: string;
+  icon: string;
+  route: string;
+  desc: string;
+  grad: readonly [string, string];
+};
+
+export type ToolSection = {
+  title: string;
+  emoji: string;
+  grad: readonly [string, string];
+  data: ToolItem[];
+};
+
+const TOOL_SECTIONS: ToolSection[] = [
   {
     title: 'Edit & Organize',
     emoji: '✏️',
@@ -73,8 +89,6 @@ const TOOL_SECTIONS = [
     ],
   },
 ];
-
-type ToolItem = typeof TOOL_SECTIONS[0]['data'][0];
 
 export default function ToolsScreen() {
   const router  = useRouter();

@@ -8,6 +8,11 @@ on:
 jobs:
   eas-build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - name: Checkout repository
@@ -17,11 +22,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
         with:
-          version: 10
+          version: 10.26.1
 
       - name: Setup Expo and EAS
         uses: expo/expo-github-action@v8
@@ -29,10 +36,20 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Install dependencies
-        working-directory: ./mobile
-        run: pnpm install --shamefully-hoist
+      - name: Verify EXPO_TOKEN
+        run: |
+          if [ -z "${{ secrets.EXPO_TOKEN }}" ]; then
+            echo "EXPO_TOKEN is missing. Add it in GitHub repository secrets."
+            exit 1
+          fi
 
-      - name: Build Android APK with EAS
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: EAS auth check
         working-directory: ./mobile
-        run: eas build --platform android --profile production --non-interactive
+        run: eas whoami
+
+      - name: Build Android APK with EAS (preview APK)
+        working-directory: ./mobile
+        run: eas build --platform android --profile preview --non-interactive --wait

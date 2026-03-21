@@ -63,4 +63,10 @@ object MuPDFBridge {
         inputPath: String,
         outputPath: String
     ): Boolean
+
+    // AI-assisted whitening
+    external fun geminiAiWhitening(
+        inputPath: String,
+        outputPath: String
+    ): Boolean
 }
