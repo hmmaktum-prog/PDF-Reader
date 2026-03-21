@@ -18,16 +18,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10.26.1
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-
-      - name: Enable Corepack (pnpm)
-        run: |
-          corepack enable
-          corepack prepare pnpm@10.26.1 --activate
-          pnpm --version
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Setup Expo and EAS
         uses: expo/expo-github-action@v8
@@ -43,7 +44,7 @@ jobs:
           fi
 
       - name: Install dependencies
-        run: corepack pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: EAS auth check
         working-directory: ./mobile
