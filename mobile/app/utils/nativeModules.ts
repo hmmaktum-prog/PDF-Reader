@@ -20,6 +20,7 @@ const QPDFBridge: any = NativeModules.QPDFBridge ?? {
   createBooklet: () => false,
   fourUpBooklet: () => false,
   imagesToPdf: () => false,
+  isQpdfLinked: () => Promise.resolve(false),
 };
 
 const MuPDFBridge: any = NativeModules.MuPDFBridge ?? {
@@ -32,6 +33,7 @@ const MuPDFBridge: any = NativeModules.MuPDFBridge ?? {
   enhanceContrastPdf: () => false,
   invertColorsPdf: () => false,
   geminiAiWhitening: () => false,
+  isMupdfLinked: () => Promise.resolve(false),
 };
 
 function ensureAndroid(name: string): void {
@@ -40,10 +42,20 @@ function ensureAndroid(name: string): void {
   }
 }
 
-function assertNativeSuccess(operation: string, ok: boolean): void {
+function assertNativeSuccess(operation: string, ok: boolean, engine: 'QPDF' | 'MuPDF' = 'QPDF'): void {
   if (!ok) {
-    throw new Error(`${operation} failed in native layer`);
+    throw new Error(`${operation} failed: ${engine} engine is either not linked or encountered a fatal error. Please check System Status in Settings.`);
   }
+}
+
+export async function isQpdfLinked(): Promise<boolean> {
+  if (Platform.OS !== 'android') return false;
+  return await QPDFBridge.isQpdfLinked();
+}
+
+export async function isMupdfLinked(): Promise<boolean> {
+  if (Platform.OS !== 'android') return false;
+  return await MuPDFBridge.isMupdfLinked();
 }
 
 // ──────────────────────────────────────────────
@@ -57,8 +69,8 @@ export async function mergePdfs(
 ): Promise<string> {
   ensureAndroid('mergePdfs');
   const result = await QPDFBridge.mergePdfs(inputPaths.join(','), outputPath, invertColors);
-  if (!result || result.includes('Stub - Pending')) {
-    throw new Error('mergePdfs is not implemented in native layer yet');
+  if (!result || result === '__ENGINE_NOT_LINKED__') {
+    throw new Error('Merge Failed: QPDF engine is not linked in this build. Please provide the required .so libraries.');
   }
   return result;
 }
@@ -198,7 +210,7 @@ export async function imagesToPdf(
 export async function grayscalePdf(inputPath: string, outputPath: string): Promise<boolean> {
   ensureAndroid('grayscalePdf');
   const ok = await MuPDFBridge.grayscalePdf(inputPath, outputPath);
-  assertNativeSuccess('grayscalePdf', ok);
+  assertNativeSuccess('grayscalePdf', ok, 'MuPDF');
   return ok;
 }
 
@@ -209,7 +221,7 @@ export async function whiteningPdf(
 ): Promise<boolean> {
   ensureAndroid('whiteningPdf');
   const ok = await MuPDFBridge.whiteningPdf(inputPath, outputPath, strength);
-  assertNativeSuccess('whiteningPdf', ok);
+  assertNativeSuccess('whiteningPdf', ok, 'MuPDF');
   return ok;
 }
 
@@ -220,21 +232,21 @@ export async function enhanceContrastPdf(
 ): Promise<boolean> {
   ensureAndroid('enhanceContrastPdf');
   const ok = await MuPDFBridge.enhanceContrastPdf(inputPath, outputPath, level);
-  assertNativeSuccess('enhanceContrastPdf', ok);
+  assertNativeSuccess('enhanceContrastPdf', ok, 'MuPDF');
   return ok;
 }
 
 export async function invertColorsPdf(inputPath: string, outputPath: string): Promise<boolean> {
   ensureAndroid('invertColorsPdf');
   const ok = await MuPDFBridge.invertColorsPdf(inputPath, outputPath);
-  assertNativeSuccess('invertColorsPdf', ok);
+  assertNativeSuccess('invertColorsPdf', ok, 'MuPDF');
   return ok;
 }
 
 export async function geminiAiWhitening(inputPath: string, outputPath: string): Promise<boolean> {
   ensureAndroid('geminiAiWhitening');
   const ok = await MuPDFBridge.geminiAiWhitening(inputPath, outputPath);
-  assertNativeSuccess('geminiAiWhitening', ok);
+  assertNativeSuccess('geminiAiWhitening', ok, 'MuPDF');
   return ok;
 }
 

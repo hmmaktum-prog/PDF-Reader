@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet, Alert, Platform } from 'react-native';
 import ToolShell from '../components/ToolShell';
 import { useAppTheme } from '../context/ThemeContext';
-import { removePages } from '../utils/nativeModules';
+import { removePages, getPageCount } from '../utils/nativeModules';
 import { pickSinglePdf } from '../utils/filePicker';
 import { getOutputPath, ensureOutputDir } from '../utils/outputPath';
 
 export default function RemovePagesScreen() {
   const { isDark } = useAppTheme();
-  const [pages] = useState<number[]>(Array.from({length: 20}, (_, i) => i + 1));
+  const [pages, setPages] = useState<number[]>([]);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [lastSelected, setLastSelected] = useState<number | null>(null);
   const [rangeMode, setRangeMode] = useState(false); // Mobile alternative to Shift key
@@ -27,6 +27,13 @@ export default function RemovePagesScreen() {
       if (!picked) return;
       setSelectedFile(picked.path);
       setSelectedFileName(picked.name);
+      
+      const count = await getPageCount(picked.path);
+      if (count > 0) {
+        setPages(Array.from({length: count}, (_, i) => i + 1));
+        setSelected(new Set());
+        setLastSelected(null);
+      }
     } catch (e: any) {
       Alert.alert('File Picker Error', e.message);
     }

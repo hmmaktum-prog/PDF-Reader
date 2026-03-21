@@ -5,9 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
-  Share,
   ScrollView,
-  Platform,
   StatusBar,
 } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -16,6 +14,7 @@ import { useAppTheme } from '../context/ThemeContext';
 import { useContinueTool } from '../context/ContinueContext';
 import * as Haptics from 'expo-haptics';
 import { cleanupTemporaryFiles } from '../utils/cleanup';
+import * as Sharing from 'expo-sharing';
 
 export type ToolStatus = 'idle' | 'processing' | 'result' | 'error';
 
@@ -94,11 +93,12 @@ export default function ToolShell({
   const handleShare = async () => {
     if (!resultPath) return;
     try {
-      await Share.share({
-        title: 'PDF Power Tools Output',
-        message: Platform.OS === 'android' ? resultPath : undefined,
-        url: Platform.OS === 'ios' ? `file://${resultPath}` : undefined,
-      });
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(resultPath, {
+          mimeType: 'application/pdf',
+          dialogTitle: 'Share PDF Output',
+        });
+      }
     } catch (_) {}
   };
 

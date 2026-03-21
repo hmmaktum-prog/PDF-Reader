@@ -18,6 +18,7 @@ import { useAppTheme } from '../context/ThemeContext';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { isQpdfLinked, isMupdfLinked } from '../utils/nativeModules';
 
 const APP_VERSION = '1.0.0';
 
@@ -28,10 +29,25 @@ export default function SettingsScreen() {
   const [showGeminiModal, setShowGeminiModal] = useState(false);
   const [geminiKey, setGeminiKey] = useState('');
   const [hasGeminiKey, setHasGeminiKey] = useState(false);
+  const [qpdfStatus, setQpdfStatus] = useState<'checking' | 'active' | 'missing'>('checking');
+  const [mupdfStatus, setMupdfStatus] = useState<'checking' | 'active' | 'missing'>('checking');
 
   useEffect(() => {
     loadGeminiKey();
+    checkEngines();
   }, []);
+
+  const checkEngines = async () => {
+    try {
+      const qLinked = await isQpdfLinked();
+      const mLinked = await isMupdfLinked();
+      setQpdfStatus(qLinked ? 'active' : 'missing');
+      setMupdfStatus(mLinked ? 'active' : 'missing');
+    } catch (e) {
+      setQpdfStatus('missing');
+      setMupdfStatus('missing');
+    }
+  };
 
   const loadGeminiKey = async () => {
     try {
@@ -161,24 +177,36 @@ export default function SettingsScreen() {
 
         {/* Processing Section */}
         <View style={styles.section}>
-          <Text style={[styles.sectionLabel, { color: muted }]}>PROCESSING ENGINE</Text>
+          <Text style={[styles.sectionLabel, { color: muted }]}>PROCESSING ENGINES</Text>
           <SettingRow
-            icon="⚡"
-            label="NDK Native Engine"
-            subtitle="QPDF + MuPDF — Always active"
-            right={<View style={[styles.badge, { backgroundColor: '#34C75922' }]}><Text style={{ color: '#34C759', fontSize: 11, fontWeight: '700' }}>ON</Text></View>}
+            icon="⚙️"
+            label="QPDF Engine"
+            subtitle={qpdfStatus === 'active' ? 'NDK C++ Engine Active' : 'Native Library Missing (.so)'}
+            right={
+              <View style={[styles.badge, { backgroundColor: qpdfStatus === 'active' ? '#34C75922' : '#FF3B3022' }]}>
+                <Text style={{ color: qpdfStatus === 'active' ? '#34C759' : '#FF3B30', fontSize: 11, fontWeight: '700' }}>
+                  {qpdfStatus === 'checking' ? '...' : qpdfStatus === 'active' ? 'ACTIVE' : 'MISSING'}
+                </Text>
+              </View>
+            }
+          />
+          <SettingRow
+            icon="🖼️"
+            label="MuPDF Engine"
+            subtitle={mupdfStatus === 'active' ? 'NDK C++ Engine Active' : 'Native Library Missing (.so)'}
+            right={
+              <View style={[styles.badge, { backgroundColor: mupdfStatus === 'active' ? '#34C75922' : '#FF3B3022' }]}>
+                <Text style={{ color: mupdfStatus === 'active' ? '#34C759' : '#FF3B30', fontSize: 11, fontWeight: '700' }}>
+                  {mupdfStatus === 'checking' ? '...' : mupdfStatus === 'active' ? 'ACTIVE' : 'MISSING'}
+                </Text>
+              </View>
+            }
           />
           <SettingRow
             icon="📴"
             label="Offline Mode"
-            subtitle="No data is uploaded to the cloud"
-            right={<View style={[styles.badge, { backgroundColor: '#007AFF22' }]}><Text style={{ color: '#007AFF', fontSize: 11, fontWeight: '700' }}>Always</Text></View>}
-          />
-          <SettingRow
-            icon="🔒"
-            label="Privacy First"
             subtitle="All processing happens on your device"
-            right={<Text style={{ fontSize: 18 }}>🛡️</Text>}
+            right={<View style={[styles.badge, { backgroundColor: '#007AFF22' }]}><Text style={{ color: '#007AFF', fontSize: 11, fontWeight: '700' }}>SECURE</Text></View>}
           />
         </View>
 

@@ -52,4 +52,6 @@ jobs:
 
       - name: Build Android APK with EAS (preview APK)
         working-directory: ./mobile
-        run: eas build --platform android --profile preview --non-interactive --wait
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: eas build --platform android --profile preview --non-interactive --clear-cache

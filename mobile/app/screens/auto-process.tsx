@@ -7,7 +7,9 @@ import DraggableFlatList, { ScaleDecorator, RenderItemParams } from 'react-nativ
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as FileSystem from 'expo-file-system/legacy';
 import { getOutputPath, ensureOutputDir } from '../utils/outputPath';
+import { whiteningPdf, enhanceContrastPdf, grayscalePdf, compressPdf } from '../utils/nativeModules';
 
 const DEFAULT_STEPS = [
   { id: 'whiten', icon: '🧹', label: 'Whiten Background', desc: 'Remove yellow tint (MuPDF)' },
@@ -78,13 +80,44 @@ export default function AutoProcessScreen() {
     const activeSteps = steps.filter(s => enabled[s.id]);
     if (activeSteps.length === 0) throw new Error('অন্তত ১টি ধাপ সক্রিয় রাখুন');
     
+    let tempInput = selectedFile;
+    let tempOutput = '';
+    const tempFiles: string[] = [];
+
     for (let i = 0; i < activeSteps.length; i++) {
+      const step = activeSteps[i];
       const pct = Math.round(((i + 0.5) / activeSteps.length) * 85);
-      onProgress(pct, activeSteps[i].label + '...');
-      await new Promise(r => setTimeout(r, 600)); // Simulate native processing
+      onProgress(pct, step.label + '...');
+      
+      tempOutput = getOutputPath(`auto_${step.id}_${Date.now()}.pdf`);
+      
+      if (step.id === 'whiten') {
+         await whiteningPdf(tempInput, tempOutput, 2);
+      } else if (step.id === 'contrast') {
+         await enhanceContrastPdf(tempInput, tempOutput, 3);
+      } else if (step.id === 'grayscale') {
+         await grayscalePdf(tempInput, tempOutput);
+      } else if (step.id === 'compress') {
+         await compressPdf(tempInput, tempOutput, 'Balanced', 70, 100, false);
+      }
+      if (tempInput !== selectedFile) {
+        tempFiles.push(tempInput);
+      }
+      tempInput = tempOutput;
     }
+    
     onProgress(95, 'Finalizing output...');
-    await new Promise(r => setTimeout(r, 300));
+    await FileSystem.copyAsync({ from: tempInput, to: outputPath });
+    
+    // Cleanup intermediate temp files
+    for (const tmp of tempFiles) {
+      try { await FileSystem.deleteAsync(tmp, { idempotent: true }); } catch (_) {}
+    }
+    // Also clean the last intermediate (which was copied to outputPath)
+    if (tempInput !== selectedFile) {
+      try { await FileSystem.deleteAsync(tempInput, { idempotent: true }); } catch (_) {}
+    }
+    
     onProgress(100, 'Pipeline complete!');
     return outputPath;
   };

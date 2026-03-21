@@ -8,7 +8,6 @@ import { invertColorsPdf } from '../utils/nativeModules';
 
 export default function InvertScreen() {
   const { isDark } = useAppTheme();
-  const [highContrast, setHighContrast] = useState(false);
   const [selectedFile, setSelectedFile] = useState('');
   const [selectedFileName, setSelectedFileName] = useState('');
 
@@ -33,6 +32,7 @@ export default function InvertScreen() {
     await ensureOutputDir();
     const outputPath = getOutputPath('inverted_output.pdf');
     onProgress(15, 'Rendering pages via MuPDF...');
+    await new Promise(resolve => setTimeout(resolve, 400));
     onProgress(50, 'Inverting pixel values...');
     await invertColorsPdf(selectedFile, outputPath);
     onProgress(100, 'Done!');
@@ -71,13 +71,6 @@ export default function InvertScreen() {
           Converts white backgrounds to black, creating a dark-mode PDF.
           Reduces eye strain when reading at night.
         </Text>
-        <View style={styles.row}>
-          <View>
-            <Text style={{ color: textColor, fontWeight: '600' }}>High Contrast Mode</Text>
-            <Text style={{ color: muted, fontSize: 12 }}>Deeper blacks, brighter whites</Text>
-          </View>
-          <Switch value={highContrast} onValueChange={setHighContrast} trackColor={{ false: '#555', true: accent }} />
-        </View>
       </View>
     </ToolShell>
   );

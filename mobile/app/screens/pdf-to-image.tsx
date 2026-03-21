@@ -5,12 +5,12 @@ import { getOutputPath, ensureOutputDir } from '../utils/outputPath';
 import { useAppTheme } from '../context/ThemeContext';
 import { batchRenderPages } from '../utils/nativeModules';
 import { pickSinglePdf } from '../utils/filePicker';
+import * as FileSystem from 'expo-file-system/legacy';
 
 export default function PdfToImageScreen() {
   const { isDark } = useAppTheme();
   const [format, setFormat] = useState<'jpeg'|'png'>('jpeg');
-  const [scale, setScale] = useState(2.0);
-  const [outputMode, setOutputMode] = useState<'zip'|'pdf'>('zip');
+  const [quality, setQuality] = useState(100);
   
   const [selectedFile, setSelectedFile] = useState('');
   const [selectedFileName, setSelectedFileName] = useState('');
@@ -33,23 +33,20 @@ export default function PdfToImageScreen() {
 
   const handleAction = async (onProgress: (pct: number, label?: string) => void) => {
     if (!selectedFile) throw new Error('Please select a PDF file first');
-    const outPath = outputMode === 'zip' 
-      ? getOutputPath('images.zip') 
-      : getOutputPath('images_new.pdf');
+    
+    await ensureOutputDir();
+    const outDir = getOutputPath(`images_output_${Date.now()}`);
+    onProgress(10, 'Creating output directory...');
+    await FileSystem.makeDirectoryAsync(outDir, { intermediates: true });
 
-    onProgress(10, 'Loading PDF...');
-    await new Promise(r => setTimeout(r, 300));
-    onProgress(35, `Rendering pages at ${scale.toFixed(1)}x Scale via MuPDF...`);
-    // Assuming native module supports scale and output mode
-    await batchRenderPages(selectedFile, outPath, format, scale, outputMode);
-    onProgress(75, outputMode === 'zip' ? 'Creating ZIP archive...' : 'Saving to new PDF...');
-    await new Promise(r => setTimeout(r, 400));
+    onProgress(35, `Rendering pages as ${format.toUpperCase()}...`);
+    await batchRenderPages(selectedFile, outDir, format, quality);
     onProgress(100, 'Done!');
-    return outPath;
+    return outDir;
   };
 
   return (
-    <ToolShell title="PDF to Image" subtitle="Extract pages to high-res images" onExecute={handleAction} executeLabel={`📸 Convert to ${outputMode.toUpperCase()}`}>
+    <ToolShell title="PDF to Image" subtitle="Extract pages to high-res images" onExecute={handleAction} executeLabel="📸 Extract Images">
       <TouchableOpacity
         style={[styles.pickBtn, { backgroundColor: cardBg, borderColor: accent }]}
         onPress={handlePickFile}
@@ -77,36 +74,17 @@ export default function PdfToImageScreen() {
         ))}
       </View>
 
-      <Text style={[styles.sectionLabel, { color: textColor, marginBottom: 10 }]}>🔍 Resolution Multiplier</Text>
+      <Text style={[styles.sectionLabel, { color: textColor, marginBottom: 10 }]}>🔍 Output Quality</Text>
       <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
-        {[1.0, 1.5, 2.0, 3.0].map(s => (
+        {[50, 70, 90, 100].map(q => (
           <TouchableOpacity
-            key={s}
-            style={[styles.scaleCard, { backgroundColor: scale === s ? accent : cardBg, borderColor: isDark ? '#444' : '#ccc' }]}
-            onPress={() => setScale(s)}
+            key={q}
+            style={[styles.scaleCard, { backgroundColor: quality === q ? accent : cardBg, borderColor: isDark ? '#444' : '#ccc' }]}
+            onPress={() => setQuality(q)}
           >
-            <Text style={{ color: scale === s ? '#fff' : textColor, fontWeight: '600' }}>{s.toFixed(1)}x</Text>
+            <Text style={{ color: quality === q ? '#fff' : textColor, fontWeight: '600' }}>{q}%</Text>
           </TouchableOpacity>
         ))}
-      </View>
-
-      <Text style={[styles.sectionLabel, { color: textColor, marginBottom: 10 }]}>📦 Output Destination</Text>
-      <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
-        <TouchableOpacity
-          style={[styles.outCard, { backgroundColor: cardBg, borderColor: outputMode === 'zip' ? accent : isDark ? '#444' : '#ccc' }, outputMode === 'zip' && { backgroundColor: accent + '15' }]}
-          onPress={() => setOutputMode('zip')}
-        >
-          <Text style={{ color: outputMode === 'zip' ? accent : textColor, fontWeight: '600', marginBottom: 2 }}>ZIP Archive</Text>
-          <Text style={{ color: muted, fontSize: 11 }}>Bundle images together</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity
-          style={[styles.outCard, { backgroundColor: cardBg, borderColor: outputMode === 'pdf' ? accent : isDark ? '#444' : '#ccc' }, outputMode === 'pdf' && { backgroundColor: accent + '15' }]}
-          onPress={() => setOutputMode('pdf')}
-        >
-          <Text style={{ color: outputMode === 'pdf' ? accent : textColor, fontWeight: '600', marginBottom: 2 }}>Images to PDF</Text>
-          <Text style={{ color: muted, fontSize: 11 }}>Save as new PDF</Text>
-        </TouchableOpacity>
       </View>
     </ToolShell>
   );

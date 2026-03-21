@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme } from './context/ThemeContext';
 import { useContinueTool } from './context/ContinueContext';
 import * as Haptics from 'expo-haptics';
+import { pickMultiplePdfs, pickImages, PickedFile } from './utils/filePicker';
 
 const QUICK_TOOLS = [
   { id: 'merge',        name: 'Merge',      icon: '🔗', route: '/screens/merge',        grad: ['#007AFF', '#0055CC'] as const },
@@ -41,6 +42,9 @@ export default function HomeScreen() {
   const { sharedFilePath, clearState } = useContinueTool();
   const { width: SCREEN_WIDTH } = useWindowDimensions();
 
+  const [pickedFiles, setPickedFiles] = useState<PickedFile[]>([]);
+  const [isToolsExpanded, setIsToolsExpanded] = useState(false);
+
   const fadeAnim   = useRef(new Animated.Value(0)).current;
   const slideAnim  = useRef(new Animated.Value(40)).current;
   const scaleAnim  = useRef(new Animated.Value(0.92)).current;
@@ -60,6 +64,26 @@ export default function HomeScreen() {
       ])
     ).start();
   }, []);
+
+  const handlePickPdf = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const files = await pickMultiplePdfs();
+    if (files.length > 0) {
+      setPickedFiles([...pickedFiles, ...files]);
+    }
+  };
+
+  const handlePickImage = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    try {
+      const files = await pickImages();
+      if (files.length > 0) {
+        setPickedFiles([...pickedFiles, ...files]);
+      }
+    } catch (e) {
+      console.warn('Gallery error', e);
+    }
+  };
 
   const bg     = isDark ? '#0a0e1a' : '#f0f2f8';
   const cardBg = isDark ? '#141824' : '#ffffff';
@@ -146,123 +170,179 @@ export default function HomeScreen() {
           </LinearGradient>
         </Animated.View>
 
-        {/* ── Continue Banner ── */}
-        {sharedFilePath && (
-          <Animated.View style={{ opacity: fadeAnim }}>
-            <LinearGradient
-              colors={['#FF950022', '#FF950008']}
-              style={[styles.banner, { borderColor: '#FF9500' }]}
-            >
-              <View style={{ flex: 1 }}>
-                <Text style={styles.bannerTitle}>➡️ Continue from previous tool</Text>
-                <Text style={[styles.bannerSub, { color: muted }]} numberOfLines={1}>{sharedFilePath}</Text>
-              </View>
-              <TouchableOpacity
-                onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); clearState(); }}
-                testID="button-clear-continue"
-              >
-                <Text style={styles.bannerClear}>✕</Text>
+        {/* ── File Selection Area ── */}
+        {pickedFiles.length === 0 ? (
+          <Animated.View style={[styles.section, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+            <Text style={[styles.sectionTitle, { color: text, textAlign: 'center', marginBottom: 16 }]}>Get Started</Text>
+            <View style={styles.uploadContainer}>
+              <TouchableOpacity style={styles.uploadBtnWrapper} onPress={handlePickImage} activeOpacity={0.8}>
+                <LinearGradient colors={['#FF2D55', '#CC0033']} style={styles.uploadBtnGrad}>
+                  <Text style={styles.uploadBtnIconBig}>🖼️</Text>
+                  <Text style={styles.uploadBtnLabel}>Upload Images</Text>
+                </LinearGradient>
               </TouchableOpacity>
-            </LinearGradient>
+              
+              <TouchableOpacity style={styles.uploadBtnWrapper} onPress={handlePickPdf} activeOpacity={0.8}>
+                <LinearGradient colors={['#007AFF', '#0055CC']} style={styles.uploadBtnGrad}>
+                  <Text style={styles.uploadBtnIconBig}>📄</Text>
+                  <Text style={styles.uploadBtnLabel}>Upload PDFs</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        ) : (
+          <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
+            <View style={[styles.selectedFilesContainer, { backgroundColor: cardBg, borderColor: border }]}>
+              <Text style={[styles.sectionLabel, { color: muted }]}>SELECTED FILES</Text>
+              
+              <ScrollView style={styles.fileList} nestedScrollEnabled showsVerticalScrollIndicator={false}>
+                {pickedFiles.map((file, idx) => (
+                   <View key={idx} style={[styles.fileCard, { borderBottomColor: border }]}>
+                      <Text style={styles.fileIcon}>{file.mimeType?.includes('image') ? '🖼️' : '📄'}</Text>
+                      <View style={{ flex: 1 }}>
+                        <Text style={[styles.fileName, { color: text }]} numberOfLines={1}>{file.name}</Text>
+                        <Text style={[styles.fileSize, { color: muted }]}>{file.size || 'Unknown Size'}</Text>
+                      </View>
+                   </View>
+                ))}
+              </ScrollView>
+
+              <View style={styles.fileActions}>
+                <TouchableOpacity style={styles.clearBtn} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setPickedFiles([]); setIsToolsExpanded(false); }}>
+                  <Text style={styles.clearBtnText}>Clear All</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={[styles.showToolsBtn, isToolsExpanded ? { backgroundColor: '#FF3B30' } : { backgroundColor: '#34C759' }]} 
+                  onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setIsToolsExpanded(!isToolsExpanded); }}
+                >
+                  <Text style={styles.showToolsBtnText}>{isToolsExpanded ? 'Hide Tools' : 'Show Tools'}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </Animated.View>
         )}
 
-        {/* ── Stats Row ── */}
-        <Animated.View style={[styles.statsRow, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          {STATS.map((s) => (
-            <Animated.View
-              key={s.label}
-              style={[
-                styles.statCard,
-                { backgroundColor: cardBg, borderColor: border },
-                { opacity: fadeAnim }
-              ]}
-            >
-              <Text style={styles.statIcon}>{s.icon}</Text>
-              <Text style={[styles.statNum, { color: s.color }]}>{s.num}</Text>
-              <Text style={[styles.statLabel, { color: muted }]}>{s.label}</Text>
-            </Animated.View>
-          ))}
-        </Animated.View>
-
-        {/* ── Quick Access ── */}
-        <Animated.View style={[styles.section, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <View style={styles.sectionHeader}>
-            <View>
-              <Text style={[styles.sectionLabel, { color: muted }]}>QUICK ACCESS</Text>
-              <Text style={[styles.sectionTitle, { color: text }]}>Popular Tools</Text>
-            </View>
-            <TouchableOpacity
-              style={[styles.seeAllBtn, { borderColor: border }]}
-              onPress={() => router.push('/tools')}
-            >
-              <Text style={styles.seeAllText}>See All</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.grid}>
-            {QUICK_TOOLS.map(tool => (
-              <TouchableOpacity
-                key={tool.id}
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  router.push(tool.route as any);
-                }}
-                activeOpacity={0.75}
-                testID={`button-quick-${tool.id}`}
-              >
-                <View style={[styles.gridCard, { backgroundColor: cardBg, borderColor: border, width: gridCardWidth }]}>
-                  <LinearGradient colors={tool.grad} style={styles.gridIconBg}>
-                    <Text style={styles.gridIcon}>{tool.icon}</Text>
-                  </LinearGradient>
-                  <Text style={[styles.gridLabel, { color: text }]}>{tool.name}</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </Animated.View>
-
-        {/* ── PDF Viewer Card ── */}
-        <Animated.View style={[styles.section, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <View style={[styles.viewerCard, { backgroundColor: cardBg, borderColor: border }]}>
-            <LinearGradient colors={['#0d2760', '#1a4fd6']} style={styles.viewerHeader}>
-              <Text style={styles.viewerHeaderIcon}>📄</Text>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.viewerHeaderTitle}>PDF Viewer</Text>
-                <Text style={styles.viewerHeaderSub}>MuPDF · 300 DPI Renderer</Text>
+        {/* ── Render Tools conditionally ── */}
+        {isToolsExpanded && (
+          <Animated.View style={{ opacity: fadeAnim, marginTop: 10 }}>
+            {/* ── Continue Banner ── */}
+            {sharedFilePath && (
+              <View style={styles.bannerContainer}>
+                <LinearGradient
+                  colors={['#FF950022', '#FF950008']}
+                  style={[styles.banner, { borderColor: '#FF9500' }]}
+                >
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.bannerTitle}>➡️ Continue from previous tool</Text>
+                    <Text style={[styles.bannerSub, { color: muted }]} numberOfLines={1}>{sharedFilePath}</Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); clearState(); }}
+                    testID="button-clear-continue"
+                  >
+                    <Text style={styles.bannerClear}>✕</Text>
+                  </TouchableOpacity>
+                </LinearGradient>
               </View>
-              <TouchableOpacity style={styles.openBtn} onPress={() => router.push('/screens/reader')} testID="button-upload-pdf">
-                <Text style={styles.openBtnText}>Open</Text>
-              </TouchableOpacity>
-            </LinearGradient>
-            <View style={[styles.viewerArea, { backgroundColor: isDark ? '#0e1220' : '#f4f6ff' }]}>
-              <Text style={{ fontSize: 52 }}>📑</Text>
-              <Text style={[styles.viewerHint, { color: muted }]}>
-                Tap Open to preview a PDF — fully offline
-              </Text>
-            </View>
-          </View>
-        </Animated.View>
+            )}
 
-        {/* ── Browse All Button ── */}
-        <Animated.View style={[{ marginHorizontal: 16, marginTop: 8 }, { opacity: fadeAnim }]}>
-          <TouchableOpacity
-            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); router.push('/tools'); }}
-            activeOpacity={0.85}
-            testID="button-view-all-tools"
-          >
-            <LinearGradient
-              colors={['#0d2760', '#1a4fd6']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.allBtn}
-            >
-              <Text style={styles.allBtnIcon}>🛠️</Text>
-              <Text style={styles.allBtnText}>Browse All 20+ Tools</Text>
-              <Text style={styles.allBtnArrow}>→</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        </Animated.View>
+            {/* ── Quick Access ── */}
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <View>
+                  <Text style={[styles.sectionLabel, { color: muted }]}>QUICK ACCESS</Text>
+                  <Text style={[styles.sectionTitle, { color: text }]}>Available Tools</Text>
+                </View>
+                <TouchableOpacity
+                  style={[styles.seeAllBtn, { borderColor: border }]}
+                  onPress={() => router.push('/tools')}
+                >
+                  <Text style={styles.seeAllText}>See All</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.grid}>
+                {QUICK_TOOLS.map(tool => (
+                  <TouchableOpacity
+                    key={tool.id}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      router.push(tool.route as any);
+                    }}
+                    activeOpacity={0.75}
+                    testID={`button-quick-${tool.id}`}
+                  >
+                    <View style={[styles.gridCard, { backgroundColor: cardBg, borderColor: border, width: gridCardWidth }]}>
+                      <LinearGradient colors={tool.grad} style={styles.gridIconBg}>
+                        <Text style={styles.gridIcon}>{tool.icon}</Text>
+                      </LinearGradient>
+                      <Text style={[styles.gridLabel, { color: text }]}>{tool.name}</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            {/* ── Stats Row ── */}
+            <View style={styles.statsRow}>
+              {STATS.map((s) => (
+                <View
+                  key={s.label}
+                  style={[
+                    styles.statCard,
+                    { backgroundColor: cardBg, borderColor: border }
+                  ]}
+                >
+                  <Text style={styles.statIcon}>{s.icon}</Text>
+                  <Text style={[styles.statNum, { color: s.color }]}>{s.num}</Text>
+                  <Text style={[styles.statLabel, { color: muted }]}>{s.label}</Text>
+                </View>
+              ))}
+            </View>
+
+            {/* ── PDF Viewer Card ── */}
+            <View style={styles.section}>
+              <View style={[styles.viewerCard, { backgroundColor: cardBg, borderColor: border }]}>
+                <LinearGradient colors={['#0d2760', '#1a4fd6']} style={styles.viewerHeader}>
+                  <Text style={styles.viewerHeaderIcon}>📄</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.viewerHeaderTitle}>PDF Viewer</Text>
+                    <Text style={styles.viewerHeaderSub}>MuPDF · 300 DPI Renderer</Text>
+                  </View>
+                  <TouchableOpacity style={styles.openBtn} onPress={() => router.push('/screens/reader')} testID="button-upload-pdf">
+                    <Text style={styles.openBtnText}>Open</Text>
+                  </TouchableOpacity>
+                </LinearGradient>
+                <View style={[styles.viewerArea, { backgroundColor: isDark ? '#0e1220' : '#f4f6ff' }]}>
+                  <Text style={{ fontSize: 52 }}>📑</Text>
+                  <Text style={[styles.viewerHint, { color: muted }]}>
+                    Tap Open to preview a PDF — fully offline
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {/* ── Browse All Button ── */}
+            <View style={[{ marginHorizontal: 16, marginTop: 8, marginBottom: 20 }]}>
+              <TouchableOpacity
+                onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); router.push('/tools'); }}
+                activeOpacity={0.85}
+                testID="button-view-all-tools"
+              >
+                <LinearGradient
+                  colors={['#0d2760', '#1a4fd6']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.allBtn}
+                >
+                  <Text style={styles.allBtnIcon}>🛠️</Text>
+                  <Text style={styles.allBtnText}>Browse All 20+ Tools</Text>
+                  <Text style={styles.allBtnArrow}>→</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        )}
       </ScrollView>
     </View>
   );
@@ -324,8 +404,41 @@ const styles = StyleSheet.create({
   tag:       { backgroundColor: '#ffffff18', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1, borderColor: '#ffffff22' },
   tagText:   { color: '#fff', fontSize: 11, fontWeight: '600' },
 
+  uploadContainer: { flexDirection: 'row', gap: 12, paddingHorizontal: 6 },
+  uploadBtnWrapper: { flex: 1 },
+  uploadBtnGrad: {
+    borderRadius: 20, paddingVertical: 24, alignItems: 'center', justifyContent: 'center',
+    elevation: 5, shadowColor: '#000', shadowOpacity: 0.15, shadowOffset: { width: 0, height: 4 }, shadowRadius: 10,
+  },
+  uploadBtnIconBig: { fontSize: 36, marginBottom: 8 },
+  uploadBtnLabel: { color: '#fff', fontWeight: '800', fontSize: 14, letterSpacing: 0.5 },
+
+  selectedFilesContainer: {
+    padding: 16, borderRadius: 22, borderWidth: 1,
+    elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowOffset: { width: 0, height: 2 }, shadowRadius: 6,
+  },
+  fileList: { maxHeight: 180, marginBottom: 12 },
+  fileCard: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    paddingVertical: 12, borderBottomWidth: 1,
+  },
+  fileIcon: { fontSize: 24 },
+  fileName: { fontSize: 14, fontWeight: '600', marginBottom: 2 },
+  fileSize: { fontSize: 11, fontWeight: '500' },
+  fileActions: { flexDirection: 'row', paddingTop: 8, gap: 10 },
+  clearBtn: {
+    paddingVertical: 12, paddingHorizontal: 16, borderRadius: 12,
+    backgroundColor: '#ff3b3015', flex: 1, alignItems: 'center',
+  },
+  clearBtnText: { color: '#FF3B30', fontWeight: '700', fontSize: 14 },
+  showToolsBtn: {
+    paddingVertical: 12, paddingHorizontal: 16, borderRadius: 12,
+    flex: 2, alignItems: 'center', elevation: 2,
+  },
+  showToolsBtnText: { color: '#fff', fontWeight: '800', fontSize: 14 },
+
+  bannerContainer: { marginHorizontal: 14, marginTop: 12 },
   banner: {
-    marginHorizontal: 14, marginTop: 12,
     padding: 14, borderRadius: 14, borderWidth: 1,
     flexDirection: 'row', alignItems: 'center', gap: 10,
   },

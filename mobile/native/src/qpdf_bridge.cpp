@@ -68,6 +68,18 @@ static std::vector<std::string> splitCsv(const std::string& text) {
     return parts;
 }
 
+// ─── Health Check ───────────────────────────────────────────
+extern "C" JNIEXPORT jboolean JNICALL
+Java_com_pdfpowertools_native_QPDFBridge_isQpdfLinked(
+        JNIEnv* env,
+        jobject /* this */) {
+#ifdef HAS_QPDF
+    return JNI_TRUE;
+#else
+    return JNI_FALSE;
+#endif
+}
+
 static bool writeMinimalPdf(const std::string& outputPath) {
     if (!ensureParentDirectory(outputPath)) return false;
     std::ofstream out(outputPath, std::ios::binary);
@@ -132,10 +144,8 @@ Java_com_pdfpowertools_native_QPDFBridge_mergePdfs(
     }
 #endif
 
-    if (inputs.empty()) return env->NewStringUTF("");
-    if (copyFileSafe(inputs.front(), out)) return env->NewStringUTF(out.c_str());
-    if (writeMinimalPdf(out)) return env->NewStringUTF(out.c_str());
-    return env->NewStringUTF("");
+    LOGE("QPDF Merge Error: Engine Not Linked (HAS_QPDF undefined)");
+    return env->NewStringUTF("__ENGINE_NOT_LINKED__");
 }
 
 // ─── Compress PDF ────────────────────────────────────────────

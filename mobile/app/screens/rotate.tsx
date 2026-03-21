@@ -49,7 +49,7 @@ export default function RotateScreen() {
       setIsLoadingPreview(true);
       const outPath = `${FileSystem.cacheDirectory}preview_${Date.now()}.jpg`;
       await renderPageToImage(selectedFile, 0, outPath, false);
-      setPreviewUri(`file://${outPath}`);
+      setPreviewUri(outPath);
     } catch (e: any) {
       Alert.alert('Preview Error', e.message);
     } finally {

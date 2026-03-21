@@ -34,6 +34,7 @@ export default function SplitByLineScreen() {
 
   const handleAction = async (onProgress: (pct: number, label?: string) => void) => {
     if (!selectedFile) throw new Error('Please select a PDF file first');
+    await ensureOutputDir();
     const outputDir = getOutputPath('visual_split');
     onProgress(15, 'Preparing document...');
     await new Promise(r => setTimeout(r, 500));

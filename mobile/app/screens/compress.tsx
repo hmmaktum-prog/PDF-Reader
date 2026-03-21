@@ -53,9 +53,9 @@ export default function CompressScreen() {
     
     // Convert text inputs
     const q = parseInt(imgQuality) || 70;
-    const r = parseInt(resScale) || 100;
+    const s = parseInt(resScale) || 100;
     
-    await compressPdf(selectedFile, outputPath, expertMode ? 'custom' : level, q, r, grayscale);
+    await compressPdf(selectedFile, outputPath, expertMode ? 'custom' : level, q, s, grayscale);
     onProgress(70, 'Reducing image resolution...');
     await new Promise(r => setTimeout(r, 400));
     onProgress(90, 'Writing compressed file...');

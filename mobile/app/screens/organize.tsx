@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, TextInput } from 'react-native';
 import ToolShell from '../components/ToolShell';
 import { useAppTheme } from '../context/ThemeContext';
-import { reorderPages } from '../utils/nativeModules';
+import { reorderPages, getPageCount } from '../utils/nativeModules';
 import { pickSinglePdf } from '../utils/filePicker';
 import { getOutputPath, ensureOutputDir } from '../utils/outputPath';
 import DraggableFlatList, { ScaleDecorator, RenderItemParams } from 'react-native-draggable-flatlist';
@@ -22,8 +22,13 @@ export default function OrganizeScreen() {
       if (!picked) return;
       setSelectedFile(picked.path);
       setSelectedFileName(picked.name);
+      
+      const count = await getPageCount(picked.path);
+      if (count > 0) {
+        setPages(Array.from({ length: count }, (_, i) => i + 1));
+      }
     } catch (e: any) {
-      Alert.alert('File Picker Error', e.message);
+      Alert.alert('Error', e.message);
     }
   };
 
@@ -133,7 +138,7 @@ export default function OrganizeScreen() {
             setPages(data);
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           }}
-          keyExtractor={(item) => String(item)}
+          keyExtractor={(item, index) => `page_${item}_${index}`}
           renderItem={renderItem}
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20 }}
           containerStyle={{ flex: 1 }}

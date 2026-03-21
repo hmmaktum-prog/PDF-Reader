@@ -230,12 +230,12 @@ export default function ReaderScreen() {
       </View>
 
       <View style={styles.controls}>
-        <TouchableOpacity onPress={() => setMode('book')} style={styles.controlBtn}><Text>Book</Text></TouchableOpacity>
-        <TouchableOpacity onPress={() => setMode('vertical')} style={styles.controlBtn}><Text>Vertical</Text></TouchableOpacity>
-        <TouchableOpacity onPress={() => setMode('horizontal')} style={styles.controlBtn}><Text>Horizontal</Text></TouchableOpacity>
-        <TouchableOpacity onPress={() => setNight((v) => !v)} style={styles.controlBtn}><Text>{night ? 'Light' : 'Night'}</Text></TouchableOpacity>
-        <TouchableOpacity onPress={() => setShowToc((v) => !v)} style={styles.controlBtn}><Text>TOC</Text></TouchableOpacity>
-        <TouchableOpacity onPress={toggleBookmark} style={styles.controlBtn}><Text>{bookmarks.includes(currentPage) ? 'Unmark' : 'Bookmark'}</Text></TouchableOpacity>
+        <TouchableOpacity onPress={() => setMode('book')} style={[styles.controlBtn, { backgroundColor: night ? '#222' : '#ffffff' }]}><Text style={{ color: text }}>Book</Text></TouchableOpacity>
+        <TouchableOpacity onPress={() => setMode('vertical')} style={[styles.controlBtn, { backgroundColor: night ? '#222' : '#ffffff' }]}><Text style={{ color: text }}>Vertical</Text></TouchableOpacity>
+        <TouchableOpacity onPress={() => setMode('horizontal')} style={[styles.controlBtn, { backgroundColor: night ? '#222' : '#ffffff' }]}><Text style={{ color: text }}>Horizontal</Text></TouchableOpacity>
+        <TouchableOpacity onPress={() => setNight((v) => !v)} style={[styles.controlBtn, { backgroundColor: night ? '#222' : '#ffffff' }]}><Text style={{ color: text }}>{night ? 'Light' : 'Night'}</Text></TouchableOpacity>
+        <TouchableOpacity onPress={() => setShowToc((v) => !v)} style={[styles.controlBtn, { backgroundColor: night ? '#222' : '#ffffff' }]}><Text style={{ color: text }}>TOC</Text></TouchableOpacity>
+        <TouchableOpacity onPress={toggleBookmark} style={[styles.controlBtn, { backgroundColor: night ? '#222' : '#ffffff' }]}><Text style={{ color: text }}>{bookmarks.includes(currentPage) ? 'Unmark' : 'Bookmark'}</Text></TouchableOpacity>
       </View>
 
       <View style={styles.searchRow}>
@@ -243,18 +243,18 @@ export default function ReaderScreen() {
           value={search}
           onChangeText={runSearch}
           placeholder="Search text..."
-          style={styles.searchInput}
-          placeholderTextColor="#999"
+          style={[styles.searchInput, { backgroundColor: night ? '#222' : '#ffffff', color: text }]}
+          placeholderTextColor={night ? '#666' : '#999'}
         />
         <Text style={styles.metaText}>{searchMatches.length} hits</Text>
       </View>
 
       {showToc && (
-        <View style={styles.toc}>
+        <View style={[styles.toc, { backgroundColor: night ? '#1a1a1a' : '#ffffff' }]}>
           {tocEntries.map((item) => (
             <TouchableOpacity key={`${item.title}-${item.page}`} onPress={() => jumpToPage(item.page)} style={styles.tocItem}>
-              <Text>{item.title}</Text>
-              <Text>P {item.page}</Text>
+              <Text style={{ color: text }}>{item.title}</Text>
+              <Text style={{ color: text }}>P {item.page}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -263,13 +263,13 @@ export default function ReaderScreen() {
       <View style={styles.readerWrap}>
         {mode === 'book' && (
           <View style={styles.bookMode}>
-            <TouchableOpacity onPress={() => jumpToPage(currentPage - 1)} style={styles.flipBtn}><Text>◀</Text></TouchableOpacity>
+            <TouchableOpacity onPress={() => jumpToPage(currentPage - 1)} style={[styles.flipBtn, { backgroundColor: night ? '#222' : '#ffffff' }]}><Text style={{ color: text }}>◀</Text></TouchableOpacity>
             <PinchGestureHandler onGestureEvent={(e: any) => setScale(Math.min(3, Math.max(1, e.nativeEvent.scale)))}>
               <View style={styles.bookPage}>
                 {pages[currentPage - 1] ? <Image source={{ uri: pages[currentPage - 1] }} style={[styles.pageImage, imageStyle]} resizeMode="contain" /> : <Text>No page render</Text>}
               </View>
             </PinchGestureHandler>
-            <TouchableOpacity onPress={() => jumpToPage(currentPage + 1)} style={styles.flipBtn}><Text>▶</Text></TouchableOpacity>
+            <TouchableOpacity onPress={() => jumpToPage(currentPage + 1)} style={[styles.flipBtn, { backgroundColor: night ? '#222' : '#ffffff' }]}><Text style={{ color: text }}>▶</Text></TouchableOpacity>
           </View>
         )}
 
@@ -278,9 +278,9 @@ export default function ReaderScreen() {
             <ScrollView ref={scrollRef} style={styles.flex} onMomentumScrollEnd={(e) => setCurrentPage(Math.max(1, Math.round(e.nativeEvent.contentOffset.y / 520) + 1))}>
               {pages.map((uri, idx) => (
                 <PinchGestureHandler key={uri + idx} onGestureEvent={(e: any) => setScale(Math.min(3, Math.max(1, e.nativeEvent.scale)))}>
-                  <View style={styles.pageCard}>
+                  <View style={[styles.pageCard, { backgroundColor: night ? '#1a1a1a' : '#fff' }]}>
                     <Image source={{ uri }} style={[styles.pageImage, imageStyle]} resizeMode="contain" />
-                    <Text style={styles.pageNo}>Page {idx + 1}</Text>
+                    <Text style={[styles.pageNo, { color: text }]}>Page {idx + 1}</Text>
                   </View>
                 </PinchGestureHandler>
               ))}
@@ -320,20 +320,20 @@ export default function ReaderScreen() {
         <View style={styles.brightnessBar}>
           <View style={[styles.brightnessFill, { width: `${brightness}%` }]} />
         </View>
-        <TouchableOpacity onPress={() => setBrightness((v) => Math.min(100, v + 10))} style={styles.controlBtn}><Text>+</Text></TouchableOpacity>
-        <TouchableOpacity onPress={() => setBrightness((v) => Math.max(0, v - 10))} style={styles.controlBtn}><Text>-</Text></TouchableOpacity>
+        <TouchableOpacity onPress={() => setBrightness((v) => Math.min(100, v + 10))} style={[styles.controlBtn, { backgroundColor: night ? '#222' : '#ffffff' }]}><Text style={{ color: text }}>+</Text></TouchableOpacity>
+        <TouchableOpacity onPress={() => setBrightness((v) => Math.max(0, v - 10))} style={[styles.controlBtn, { backgroundColor: night ? '#222' : '#ffffff' }]}><Text style={{ color: text }}>-</Text></TouchableOpacity>
       </View>
 
       {brightness > 0 && <View pointerEvents="none" style={[styles.brightnessOverlay, { opacity: brightness / 140 }]} />}
 
       <Modal transparent visible={showTools} animationType="slide">
         <View style={styles.modalBackdrop}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Tool Menu</Text>
-            <TouchableOpacity style={styles.modalBtn} onPress={() => applyToolAction('compress')}><Text>Compress PDF</Text></TouchableOpacity>
-            <TouchableOpacity style={styles.modalBtn} onPress={() => applyToolAction('rotate')}><Text>Rotate All Pages</Text></TouchableOpacity>
-            <TouchableOpacity style={styles.modalBtn} onPress={() => applyToolAction('invert')}><Text>Night Style (Invert)</Text></TouchableOpacity>
-            <TouchableOpacity style={styles.modalBtn} onPress={() => setShowTools(false)}><Text>Close</Text></TouchableOpacity>
+          <View style={[styles.modalCard, { backgroundColor: night ? '#1a1a1a' : '#fff' }]}>
+            <Text style={[styles.modalTitle, { color: text }]}>Tool Menu</Text>
+            <TouchableOpacity style={[styles.modalBtn, { backgroundColor: night ? '#2a2a2a' : '#f0f2f8' }]} onPress={() => applyToolAction('compress')}><Text style={{ color: text }}>Compress PDF</Text></TouchableOpacity>
+            <TouchableOpacity style={[styles.modalBtn, { backgroundColor: night ? '#2a2a2a' : '#f0f2f8' }]} onPress={() => applyToolAction('rotate')}><Text style={{ color: text }}>Rotate All Pages</Text></TouchableOpacity>
+            <TouchableOpacity style={[styles.modalBtn, { backgroundColor: night ? '#2a2a2a' : '#f0f2f8' }]} onPress={() => applyToolAction('invert')}><Text style={{ color: text }}>Night Style (Invert)</Text></TouchableOpacity>
+            <TouchableOpacity style={[styles.modalBtn, { backgroundColor: night ? '#2a2a2a' : '#f0f2f8' }]} onPress={() => setShowTools(false)}><Text style={{ color: text }}>Close</Text></TouchableOpacity>
           </View>
         </View>
       </Modal>

@@ -68,6 +68,18 @@ static int countPdfPagesHeuristic(const std::string& inputPath) {
     return count > 0 ? static_cast<int>(count) : 1;
 }
 
+// ─── Health Check ───────────────────────────────────────────
+extern "C" JNIEXPORT jboolean JNICALL
+Java_com_pdfpowertools_native_MuPDFBridge_isMupdfLinked(
+        JNIEnv* env,
+        jobject /* this */) {
+#ifdef HAS_MUPDF
+    return JNI_TRUE;
+#else
+    return JNI_FALSE;
+#endif
+}
+
 static bool writeTinyPng(const std::string& outputPath) {
     if (!ensureParentDirectory(outputPath)) return false;
     const unsigned char pngData[] = {
@@ -140,7 +152,8 @@ Java_com_pdfpowertools_native_MuPDFBridge_renderPdfToImage(
 #else
     (void) pageNumber;
     (void) highRes;
-    return writeTinyPng(out) ? JNI_TRUE : JNI_FALSE;
+    LOGE("MuPDF Render Error: Engine Not Linked");
+    return JNI_FALSE;
 #endif
 }
 

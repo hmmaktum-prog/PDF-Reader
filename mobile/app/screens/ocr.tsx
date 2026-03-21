@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Switch, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import ToolShell from '../components/ToolShell';
 import { useAppTheme } from '../context/ThemeContext';
-import { AVAILABLE_MODELS, GeminiModel, OcrLanguage } from '../utils/geminiService';
+import { AVAILABLE_MODELS, GeminiModel, OcrLanguage, extractTextWithGemini, DocumentBlock } from '../utils/geminiService';
 import { batchRenderPages } from '../utils/nativeModules';
 import { pickSinglePdf } from '../utils/filePicker';
 import { getOutputPath, ensureOutputDir } from '../utils/outputPath';
+import * as FileSystem from 'expo-file-system/legacy';
 
 const LANGUAGES = [
   { id: 'ben', label: 'বাংলা', flag: '🇧🇩' },
@@ -63,17 +64,66 @@ export default function OcrScreen() {
     }
 
     await ensureOutputDir();
+    
+    const ocrDir = getOutputPath('ocr_pages');
+    const dirInfo = await FileSystem.getInfoAsync(ocrDir);
+    if (!dirInfo.exists) {
+      await FileSystem.makeDirectoryAsync(ocrDir, { intermediates: true });
+    }
+
     onProgress(10, 'Rendering pages via MuPDF...');
-    await batchRenderPages(selectedFile, getOutputPath('ocr_pages'), 'jpeg', 300);
-    onProgress(35, useGemini ? `Sending to Gemini ${selectedModel}...` : 'Running PaddleOCR offline...');
-    await new Promise(r => setTimeout(r, 1000));
-    onProgress(65, 'Parsing OCR blocks...');
-    await new Promise(r => setTimeout(r, 500));
-    onProgress(85, `Generating ${outputFormat} output...`);
-    await new Promise(r => setTimeout(r, 500));
-    onProgress(100, 'OCR complete!');
-    const ext = outputFormat === 'text' ? 'txt' : outputFormat === 'docx' ? 'docx' : 'json';
-    return getOutputPath(`ocr_result.${ext}`);
+    const renderedPages = await batchRenderPages(selectedFile, ocrDir, 'jpeg', 300);
+    
+    if (useGemini) {
+      onProgress(30, `Reading rendered images...`);
+      const base64Images: string[] = [];
+      for (const pagePath of renderedPages) {
+        const b64 = await FileSystem.readAsStringAsync(pagePath, { encoding: FileSystem.EncodingType.Base64 });
+        base64Images.push(b64);
+      }
+
+      const langMap: Record<string, OcrLanguage> = { ben: 'Bengali', eng: 'English', ara: 'Arabic', mixed: 'Mixed' };
+      const ocrLang = langMap[language] || 'Bengali';
+
+      onProgress(45, `Sending to Gemini ${selectedModel}...`);
+      const blocks = await extractTextWithGemini({
+        base64Images,
+        language: ocrLang,
+        model: selectedModel as GeminiModel,
+        onProgress: (current, total, phase) => {
+          const pct = 45 + Math.round((current / total) * 35);
+          onProgress(pct, phase);
+        },
+      });
+
+      onProgress(85, `Generating ${outputFormat} output...`);
+      const ext = outputFormat === 'text' ? 'txt' : outputFormat === 'docx' ? 'docx' : 'json';
+      const outputPath = getOutputPath(`ocr_result.${ext}`);
+
+      if (outputFormat === 'json') {
+        await FileSystem.writeAsStringAsync(outputPath, JSON.stringify(blocks, null, 2));
+      } else {
+        // Convert blocks to plain text
+        const textContent = blocks.map((block: DocumentBlock) => {
+          if (typeof block.content === 'string') return block.content;
+          if (Array.isArray(block.content)) {
+            return (block.content as any[]).map((row: any) =>
+              Array.isArray(row) ? row.join('\t') : String(row)
+            ).join('\n');
+          }
+          if (block.type === 'page_break') return '\n--- Page Break ---\n';
+          if (block.type === 'separator') return '---';
+          return '';
+        }).join('\n\n');
+        await FileSystem.writeAsStringAsync(outputPath, textContent);
+      }
+
+      onProgress(100, 'OCR complete!');
+      return outputPath;
+    } else {
+      // PaddleOCR offline — not yet wired to native bridge
+      throw new Error('Offline PaddleOCR is not yet available in this build. Please enable Gemini AI mode or wait for a future update with native PaddleOCR support.');
+    }
   };
 
   return (
