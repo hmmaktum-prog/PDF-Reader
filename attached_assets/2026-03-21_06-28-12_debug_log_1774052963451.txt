@@ -1,0 +1,529 @@
+W/fpowertools.app( 7842): Unexpected CPU variant for x86: x86_64.
+
+W/fpowertools.app( 7842): Known variants: atom, sandybridge, silvermont, kabylake, default
+
+D/CompatibilityChangeReporter( 7842): Compat change id reported: 171979766; UID 10172; state: ENABLED
+
+D/nativeloader( 7842): Configuring classloader-namespace for other apk /data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/base.apk. target_sdk_version=34, uses_libraries=, library_path=/data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/lib/x86_64:/data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/base.apk!/lib/x86_64, permitted_path=/data:/mnt/expand:/data/user/0/com.pdfpowertools.app
+
+V/GraphicsEnvironment( 7842): ANGLE Developer option for 'com.pdfpowertools.app' set to: 'default'
+
+V/GraphicsEnvironment( 7842): ANGLE GameManagerService for com.pdfpowertools.app: false
+
+V/GraphicsEnvironment( 7842): Neither updatable production driver nor prerelease driver is supported.
+
+D/NetworkSecurityConfig( 7842): No Network Security Config specified, using platform default
+
+D/NetworkSecurityConfig( 7842): No Network Security Config specified, using platform default
+
+W/SoLoader( 7842): Initializing SoLoader: 0
+
+W/SoLoader( 7842): Recording new base apk path: /data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/base.apk
+
+W/SoLoader( 7842): Previously recorded 0 base apk paths.
+
+I/SoLoader( 7842): Preparing SO source: DirectorySoSource[root = /vendor/lib64 flags = 2]
+
+I/SoLoader( 7842): Preparing SO source: DirectorySoSource[root = /system/lib64 flags = 2]
+
+I/SoLoader( 7842): Preparing SO source: DirectApkSoSource[root = [/data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/base.apk!/lib/x86_64]]
+
+I/SoLoader( 7842): Preparing SO source: ApplicationSoSource[DirectorySoSource[root = /data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/lib/x86_64 flags = 0]]
+
+I/SoLoader( 7842): init finish: 4 SO sources prepared
+
+W/SoLoader( 7842): SoLoader initialized: 8
+
+D/jni_lib_merge( 7842): Entering merged library JNI_OnLoad.
+
+D/jni_lib_merge( 7842): Preparing 12 pre-merged libs (including stub)
+
+D/jni_lib_merge( 7842): Preparing to register libfabricjni_so.  onload_func: 0x7c28f54b2ba0
+
+D/jni_lib_merge( 7842): Preparing to register libreact_devsupportjni_so.  onload_func: 0x7c28f558e530
+
+D/jni_lib_merge( 7842): Preparing to register libreact_featureflagsjni_so.  onload_func: 0x7c28f55a10a0
+
+D/jni_lib_merge( 7842): Preparing to register libreact_newarchdefaults_so.  onload_func: 0x7c28f55c7fa0
+
+D/jni_lib_merge( 7842): Preparing to register libreactnativeblob_so.  onload_func: 0x7c28f566fa50
+
+D/jni_lib_merge( 7842): Preparing to register libreactnativejni_so.  onload_func: 0x7c28f568a8c0
+
+D/jni_lib_merge( 7842): Preparing to register libreactnativejni_common_so.  onload_func: 0x7c28f5691150
+
+D/jni_lib_merge( 7842): Preparing to register librninstance_so.  onload_func: 0x7c28f56af450
+
+D/jni_lib_merge( 7842): Preparing to register libturbomodulejsijni_so.  onload_func: 0x7c28f575ab80
+
+D/jni_lib_merge( 7842): Preparing to register libuimanagerjni_so.  onload_func: 0x7c28f5762ab0
+
+D/jni_lib_merge( 7842): Preparing to register libyoga_so.  onload_func: 0x7c28f576a130
+
+D/jni_lib_merge( 7842): About to register 11 actual methods.
+
+W/SoLoader( 7842): Running a recovery step for libappmodules.so due to com.facebook.soloader.SoLoaderDSONotFoundError: couldn't find DSO to load: libappmodules.so
+
+W/SoLoader( 7842): 	existing SO sources: 
+
+W/SoLoader( 7842): 		SoSource 0: ApplicationSoSource[DirectorySoSource[root = /data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/lib/x86_64 flags = 0]]
+
+W/SoLoader( 7842): 		SoSource 1: DirectApkSoSource[root = [/data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/base.apk!/lib/x86_64]]
+
+W/SoLoader( 7842): 		SoSource 2: DirectorySoSource[root = /system/lib64 flags = 2]
+
+W/SoLoader( 7842): 		SoSource 3: DirectorySoSource[root = /vendor/lib64 flags = 2]
+
+W/SoLoader( 7842): 	Native lib dir: /data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/lib/x86_64
+
+W/soloader.recovery.CheckBaseApkExists( 7842): Base apk exists: /data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/base.apk
+
+W/SoLoader( 7842): Running a recovery step for libappmodules.so due to com.facebook.soloader.SoLoaderDSONotFoundError: couldn't find DSO to load: libappmodules.so
+
+W/SoLoader( 7842): 	existing SO sources: 
+
+W/SoLoader( 7842): 		SoSource 0: ApplicationSoSource[DirectorySoSource[root = /data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/lib/x86_64 flags = 0]]
+
+W/SoLoader( 7842): 		SoSource 1: DirectApkSoSource[root = [/data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/base.apk!/lib/x86_64]]
+
+W/SoLoader( 7842): 		SoSource 2: DirectorySoSource[root = /system/lib64 flags = 2]
+
+W/SoLoader( 7842): 		SoSource 3: DirectorySoSource[root = /vendor/lib64 flags = 2]
+
+W/SoLoader( 7842): 	Native lib dir: /data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/lib/x86_64
+
+E/SoLoader( 7842): Checking /data/app missing libraries.
+
+E/SoLoader( 7842): Successfully recovered from /data/app disk failure.
+
+W/SoLoader( 7842): Running a recovery step for libappmodules.so due to com.facebook.soloader.SoLoaderDSONotFoundError: couldn't find DSO to load: libappmodules.so
+
+W/SoLoader( 7842): 	existing SO sources: 
+
+W/SoLoader( 7842): 		SoSource 0: ApplicationSoSource[DirectorySoSource[root = /data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/lib/x86_64 flags = 0]]
+
+W/SoLoader( 7842): 		SoSource 1: DirectApkSoSource[root = [/data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/base.apk!/lib/x86_64]]
+
+W/SoLoader( 7842): 		SoSource 2: DirectorySoSource[root = /system/lib64 flags = 3]
+
+W/SoLoader( 7842): 		SoSource 3: DirectorySoSource[root = /vendor/lib64 flags = 3]
+
+W/SoLoader( 7842): 	Native lib dir: /data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/lib/x86_64
+
+E/SoLoader( 7842): Checking /data/data missing libraries.
+
+E/SoLoader( 7842): No libraries missing from unpacking so paths while recovering /data/data failure
+
+W/SoLoader( 7842): Running a recovery step for libappmodules.so due to com.facebook.soloader.SoLoaderDSONotFoundError: couldn't find DSO to load: libappmodules.so
+
+W/SoLoader( 7842): 	existing SO sources: 
+
+W/SoLoader( 7842): 		SoSource 0: ApplicationSoSource[DirectorySoSource[root = /data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/lib/x86_64 flags = 0]]
+
+W/SoLoader( 7842): 		SoSource 1: DirectApkSoSource[root = [/data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/base.apk!/lib/x86_64]]
+
+W/SoLoader( 7842): 		SoSource 2: DirectorySoSource[root = /system/lib64 flags = 3]
+
+W/SoLoader( 7842): 		SoSource 3: DirectorySoSource[root = /vendor/lib64 flags = 3]
+
+W/SoLoader( 7842): 	Native lib dir: /data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/lib/x86_64
+
+W/SoLoader( 7842): Failed to recover
+
+D/AppCompatDelegate( 7842): Checking for metadata for AppLocalesMetadataHolderService : Service not found
+
+D/libEGL  ( 7842): loaded /vendor/lib64/egl/libEGL_emulation.so
+
+D/libEGL  ( 7842): loaded /vendor/lib64/egl/libGLESv1_CM_emulation.so
+
+D/libEGL  ( 7842): loaded /vendor/lib64/egl/libGLESv2_emulation.so
+
+W/SoLoader( 7842): Running a recovery step for libappmodules.so due to com.facebook.soloader.SoLoaderDSONotFoundError: couldn't find DSO to load: libappmodules.so
+
+W/SoLoader( 7842): 	existing SO sources: 
+
+W/SoLoader( 7842): 		SoSource 0: ApplicationSoSource[DirectorySoSource[root = /data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/lib/x86_64 flags = 0]]
+
+W/SoLoader( 7842): 		SoSource 1: DirectApkSoSource[root = [/data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/base.apk!/lib/x86_64]]
+
+W/SoLoader( 7842): 		SoSource 2: DirectorySoSource[root = /system/lib64 flags = 3]
+
+W/SoLoader( 7842): 		SoSource 3: DirectorySoSource[root = /vendor/lib64 flags = 3]
+
+W/SoLoader( 7842): 	Native lib dir: /data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/lib/x86_64
+
+W/soloader.recovery.CheckBaseApkExists( 7842): Base apk exists: /data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/base.apk
+
+W/SoLoader( 7842): Running a recovery step for libappmodules.so due to com.facebook.soloader.SoLoaderDSONotFoundError: couldn't find DSO to load: libappmodules.so
+
+W/SoLoader( 7842): 	existing SO sources: 
+
+W/SoLoader( 7842): 		SoSource 0: ApplicationSoSource[DirectorySoSource[root = /data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/lib/x86_64 flags = 0]]
+
+W/SoLoader( 7842): 		SoSource 1: DirectApkSoSource[root = [/data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/base.apk!/lib/x86_64]]
+
+W/SoLoader( 7842): 		SoSource 2: DirectorySoSource[root = /system/lib64 flags = 3]
+
+W/SoLoader( 7842): 		SoSource 3: DirectorySoSource[root = /vendor/lib64 flags = 3]
+
+W/SoLoader( 7842): 	Native lib dir: /data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/lib/x86_64
+
+E/SoLoader( 7842): Checking /data/app missing libraries.
+
+E/SoLoader( 7842): Successfully recovered from /data/app disk failure.
+
+W/SoLoader( 7842): Running a recovery step for libappmodules.so due to com.facebook.soloader.SoLoaderDSONotFoundError: couldn't find DSO to load: libappmodules.so
+
+W/SoLoader( 7842): 	existing SO sources: 
+
+W/SoLoader( 7842): 		SoSource 0: ApplicationSoSource[DirectorySoSource[root = /data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/lib/x86_64 flags = 0]]
+
+W/SoLoader( 7842): 		SoSource 1: DirectApkSoSource[root = [/data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/base.apk!/lib/x86_64]]
+
+W/SoLoader( 7842): 		SoSource 2: DirectorySoSource[root = /system/lib64 flags = 3]
+
+W/SoLoader( 7842): 		SoSource 3: DirectorySoSource[root = /vendor/lib64 flags = 3]
+
+W/SoLoader( 7842): 	Native lib dir: /data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/lib/x86_64
+
+E/SoLoader( 7842): Checking /data/data missing libraries.
+
+E/SoLoader( 7842): No libraries missing from unpacking so paths while recovering /data/data failure
+
+W/SoLoader( 7842): Running a recovery step for libappmodules.so due to com.facebook.soloader.SoLoaderDSONotFoundError: couldn't find DSO to load: libappmodules.so
+
+W/SoLoader( 7842): 	existing SO sources: 
+
+W/SoLoader( 7842): 		SoSource 0: ApplicationSoSource[DirectorySoSource[root = /data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/lib/x86_64 flags = 0]]
+
+W/SoLoader( 7842): 		SoSource 1: DirectApkSoSource[root = [/data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/base.apk!/lib/x86_64]]
+
+W/SoLoader( 7842): 		SoSource 2: DirectorySoSource[root = /system/lib64 flags = 3]
+
+W/SoLoader( 7842): 		SoSource 3: DirectorySoSource[root = /vendor/lib64 flags = 3]
+
+W/SoLoader( 7842): 	Native lib dir: /data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/lib/x86_64
+
+W/SoLoader( 7842): Failed to recover
+
+W/unknown:BridgelessReact( 7842): ReactHost{0}.startSurface(surfaceId = 0): Schedule
+
+W/unknown:BridgelessReact( 7842): ReactHost{0}.attachSurface(surfaceId = 0)
+
+W/unknown:BridgelessReact( 7842): ReactHost{0}.getOrCreateReactInstanceTask()
+
+W/unknown:BridgelessReact( 7842): ReactHost{0}.getOrCreateReactInstanceTask(): Start
+
+W/unknown:BridgelessReact( 7842): ReactHost{0}.getJSBundleLoader()
+
+W/unknown:BridgelessReact( 7842): ReactHost{0}.onHostResume(activity)
+
+W/unknown:BridgelessReact( 7842): ReactHost{0}.getOrCreateReactContext(): Creating BridgelessReactContext
+
+W/unknown:BridgelessReact( 7842): ReactHost{0}.getOrCreateReactInstanceTask(): Creating ReactInstance
+
+D/jni_lib_merge( 7842): Entering merged library JNI_OnLoad.
+
+D/jni_lib_merge( 7842): Preparing 4 pre-merged libs (including stub)
+
+D/jni_lib_merge( 7842): Preparing to register libhermes_executor_so.  onload_func: 0x7c29499a6730
+
+D/jni_lib_merge( 7842): Preparing to register libhermesinstancejni_so.  onload_func: 0x7c29499addb0
+
+D/jni_lib_merge( 7842): Preparing to register libjsijniprofiler_so.  onload_func: 0x7c29499ae540
+
+D/jni_lib_merge( 7842): About to register 3 actual methods.
+
+W/SoLoader( 7842): Running a recovery step for libappmodules.so due to com.facebook.soloader.SoLoaderDSONotFoundError: couldn't find DSO to load: libappmodules.so
+
+W/SoLoader( 7842): 	existing SO sources: 
+
+W/SoLoader( 7842): 		SoSource 0: ApplicationSoSource[DirectorySoSource[root = /data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/lib/x86_64 flags = 0]]
+
+W/SoLoader( 7842): 		SoSource 1: DirectApkSoSource[root = [/data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/base.apk!/lib/x86_64]]
+
+W/SoLoader( 7842): 		SoSource 2: DirectorySoSource[root = /system/lib64 flags = 3]
+
+W/SoLoader( 7842): 		SoSource 3: DirectorySoSource[root = /vendor/lib64 flags = 3]
+
+W/SoLoader( 7842): 	Native lib dir: /data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/lib/x86_64
+
+W/soloader.recovery.CheckBaseApkExists( 7842): Base apk exists: /data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/base.apk
+
+W/SoLoader( 7842): Running a recovery step for libappmodules.so due to com.facebook.soloader.SoLoaderDSONotFoundError: couldn't find DSO to load: libappmodules.so
+
+W/SoLoader( 7842): 	existing SO sources: 
+
+W/SoLoader( 7842): 		SoSource 0: ApplicationSoSource[DirectorySoSource[root = /data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/lib/x86_64 flags = 0]]
+
+W/SoLoader( 7842): 		SoSource 1: DirectApkSoSource[root = [/data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/base.apk!/lib/x86_64]]
+
+W/SoLoader( 7842): 		SoSource 2: DirectorySoSource[root = /system/lib64 flags = 3]
+
+W/SoLoader( 7842): 		SoSource 3: DirectorySoSource[root = /vendor/lib64 flags = 3]
+
+W/SoLoader( 7842): 	Native lib dir: /data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/lib/x86_64
+
+E/SoLoader( 7842): Checking /data/app missing libraries.
+
+E/SoLoader( 7842): Successfully recovered from /data/app disk failure.
+
+W/SoLoader( 7842): Running a recovery step for libappmodules.so due to com.facebook.soloader.SoLoaderDSONotFoundError: couldn't find DSO to load: libappmodules.so
+
+W/SoLoader( 7842): 	existing SO sources: 
+
+W/SoLoader( 7842): 		SoSource 0: ApplicationSoSource[DirectorySoSource[root = /data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/lib/x86_64 flags = 0]]
+
+W/SoLoader( 7842): 		SoSource 1: DirectApkSoSource[root = [/data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/base.apk!/lib/x86_64]]
+
+W/SoLoader( 7842): 		SoSource 2: DirectorySoSource[root = /system/lib64 flags = 3]
+
+W/SoLoader( 7842): 		SoSource 3: DirectorySoSource[root = /vendor/lib64 flags = 3]
+
+W/SoLoader( 7842): 	Native lib dir: /data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/lib/x86_64
+
+E/SoLoader( 7842): Checking /data/data missing libraries.
+
+E/SoLoader( 7842): No libraries missing from unpacking so paths while recovering /data/data failure
+
+W/SoLoader( 7842): Running a recovery step for libappmodules.so due to com.facebook.soloader.SoLoaderDSONotFoundError: couldn't find DSO to load: libappmodules.so
+
+W/SoLoader( 7842): 	existing SO sources: 
+
+W/SoLoader( 7842): 		SoSource 0: ApplicationSoSource[DirectorySoSource[root = /data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/lib/x86_64 flags = 0]]
+
+W/SoLoader( 7842): 		SoSource 1: DirectApkSoSource[root = [/data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/base.apk!/lib/x86_64]]
+
+W/SoLoader( 7842): 		SoSource 2: DirectorySoSource[root = /system/lib64 flags = 3]
+
+W/SoLoader( 7842): 		SoSource 3: DirectorySoSource[root = /vendor/lib64 flags = 3]
+
+W/SoLoader( 7842): 	Native lib dir: /data/app/~~xhtCAlJuE04IwmzG9uGHOA==/com.pdfpowertools.app-2h6cb7Cqx1p-kyk2L_HHkA==/lib/x86_64
+
+W/SoLoader( 7842): Failed to recover
+
+I/ExpoModulesCore( 7842): ✅ AppContext was initialized
+
+W/unknown:BridgelessReact( 7842): ReactHost{0}.getOrCreateReactInstanceTask(): Loading JS Bundle
+
+E/ReactNativeJS( 7842): [runtime not ready]: Invariant Violation: TurboModuleRegistry.getEnforcing(...): 'PlatformConstants' could not be found. Verify that a module by this name is registered in the native binary.
+
+W/unknown:BridgelessReact( 7842): ReactHost{0}.handleHostException(message = "[runtime not ready]: Invariant Violation: TurboModuleRegistry.getEnforcing(...): 'PlatformConstants' could not be found. Verify that a module by this name is registered in the native binary., stack:
+
+W/unknown:BridgelessReact( 7842): invariant@1:123447
+
+W/unknown:BridgelessReact( 7842): getEnforcing@1:123290
+
+W/unknown:BridgelessReact( 7842): anonymous@1:131360
+
+W/unknown:BridgelessReact( 7842): loadModuleImplementation@1:46399
+
+W/unknown:BridgelessReact( 7842): guardedLoadModule@1:45922
+
+W/unknown:BridgelessReact( 7842): metroRequire@1:45432
+
+W/unknown:BridgelessReact( 7842): anonymous@1:131045
+
+W/unknown:BridgelessReact( 7842): loadModuleImplementation@1:46399
+
+W/unknown:BridgelessReact( 7842): guardedLoadModule@1:45922
+
+W/unknown:BridgelessReact( 7842): metroRequire@1:45432
+
+W/unknown:BridgelessReact( 7842): anonymous@1:130618
+
+W/unknown:BridgelessReact( 7842): loadModuleImplementation@1:46399
+
+W/unknown:BridgelessReact( 7842): guardedLoadModule@1:45922
+
+W/unknown:BridgelessReact( 7842): metroRequire@1:45432
+
+W/unknown:BridgelessReact( 7842): anonymous@1:145393
+
+W/unknown:BridgelessReact( 7842): loadModuleImplementation@1:46399
+
+W/unknown:BridgelessReact( 7842): guardedLoadModule@1:45922
+
+W/unknown:BridgelessReact( 7842): metroRequire@1:45432
+
+W/unknown:BridgelessReact( 7842): anonymous@1:143919
+
+W/unknown:BridgelessReact( 7842): loadModuleImplementation@1:46399
+
+W/unknown:BridgelessReact( 7842): guardedLoadModule@1:45922
+
+W/unknown:BridgelessReact( 7842): metroRequire@1:45432
+
+W/unknown:BridgelessReact( 7842): anonymous@1:142439
+
+W/unknown:BridgelessReact( 7842): loadModuleImplementation@1:46399
+
+W/unknown:BridgelessReact( 7842): guardedLoadModule@1:45922
+
+W/unknown:BridgelessReact( 7842): metroRequire@1:45432
+
+W/unknown:BridgelessReact( 7842): anonymous@1:141326
+
+W/unknown:BridgelessReact( 7842): loadModuleImplementation@1:46399
+
+W/unknown:BridgelessReact( 7842): guardedLoadModule@1:45922
+
+W/unknown:BridgelessReact( 7842): metroRequire@1:45432
+
+W/unknown:BridgelessReact( 7842): anonymous@1:477080
+
+W/unknown:BridgelessReact( 7842): loadModuleImplementation@1:46399
+
+W/unknown:BridgelessReact( 7842): guardedLoadModule@1:45922
+
+W/unknown:BridgelessReact( 7842): metroRequire@1:45432
+
+W/unknown:BridgelessReact( 7842): anonymous@1:475100
+
+W/unknown:BridgelessReact( 7842): loadModuleImplementation@1:46399
+
+W/unknown:BridgelessReact( 7842): guardedLoadModule@1:45922
+
+W/unknown:BridgelessReact( 7842): metroRequire@1:45432
+
+W/unknown:BridgelessReact( 7842): anonymous@1:474546
+
+W/unknown:BridgelessReact( 7842): loadModuleImplementation@1:46399
+
+W/unknown:BridgelessReact( 7842): guardedLoadModule@1:45922
+
+W/unknown:BridgelessReact( 7842): metroRequire@1:45432
+
+W/unknown:BridgelessReact( 7842): anonymous@1:474428
+
+W/unknown:BridgelessReact( 7842): loadModuleImplementation@1:46399
+
+W/unknown:BridgelessReact( 7842): guardedLoadModule@1:45922
+
+W/unknown:BridgelessReact( 7842): metroRequire@1:45432
+
+W/unknown:BridgelessReact( 7842): anonymous@1:473254
+
+W/unknown:BridgelessReact( 7842): loadModuleImplementation@1:46399
+
+W/unknown:BridgelessReact( 7842): guardedLoadModule@1:45922
+
+W/unknown:BridgelessReact( 7842): metroRequire@1:45432
+
+W/unknown:BridgelessReact( 7842): anonymous@1:469902
+
+W/unknown:BridgelessReact( 7842): loadModuleImplementation@1:46399
+
+W/unknown:BridgelessReact( 7842): guardedLoadModule@1:45922
+
+W/unknown:BridgelessReact( 7842): metroRequire@1:45432
+
+W/unknown:BridgelessReact( 7842): anonymous@1:469229
+
+W/unknown:BridgelessReact( 7842): loadModuleImplementation@1:46399
+
+W/unknown:BridgelessReact( 7842): guardedLoadModule@1:45922
+
+W/unknown:BridgelessReact( 7842): metroRequire@1:45432
+
+W/unknown:BridgelessReact( 7842): setUpDefaltReactNativeEnvironment@1:100457
+
+W/unknown:BridgelessReact( 7842): anonymous@1:100054
+
+W/unknown:BridgelessReact( 7842): loadModuleImplementation@1:46399
+
+W/unknown:BridgelessReact( 7842): guardedLoadModule@1:45878
+
+W/unknown:BridgelessReact( 7842): metroRequire@1:45432
+
+W/unknown:BridgelessReact( 7842): global@1:44855
+
+W/unknown:BridgelessReact( 7842): ")
+
+W/unknown:BridgelessReact( 7842): ReactHost{0}.getOrCreateReactInstanceTask(): Calling DevSupportManagerBase.onNewReactContextCreated(reactContext)
+
+W/unknown:BridgelessReact( 7842): ReactHost{0}.startSurface(surfaceId = 0): Execute
+
+D/HostConnection( 7842): HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_native_sync_v3 ANDROID_EMU_native_sync_v4 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_YUV_Cache ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_sync_buffer_data ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_multi_configs ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_1 
+
+W/OpenGLRenderer( 7842): Failed to choose config with EGL_SWAP_BEHAVIOR_PRESERVED, retrying without...
+
+W/OpenGLRenderer( 7842): Failed to initialize 101010-2 format, error = EGL_SUCCESS
+
+D/EGL_emulation( 7842): eglCreateContext: 0x7c29f9a18310: maj 3 min 1 rcv 4
+
+D/EGL_emulation( 7842): eglMakeCurrent: 0x7c29f9a18310: ver 3 1 (tinfo 0x7c2c1ef60080) (first time)
+
+E/libc++abi( 7842): terminating due to uncaught exception of type facebook::jni::JniException: com.facebook.react.common.JavascriptException: [runtime not ready]: Invariant Violation: TurboModuleRegistry.getEnforcing(...): 'PlatformConstants' could not be found. Verify that a module by this name is registered in the native binary., stack:
+
+E/libc++abi( 7842): invariant@1:123447
+
+E/libc++abi( 7842): getEnforcing@1:123290
+
+E/libc++abi( 7842): anonymous@1:131360
+
+E/libc++abi( 7842): loadModuleImplementation@1:46399
+
+E/libc++abi( 7842): guardedLoadModule@1:45922
+
+E/libc++abi( 7842): metroRequire@1:45432
+
+E/libc++abi( 7842): anonymous@1:131045
+
+E/libc++abi( 7842): loadModuleImplementation@1:46399
+
+E/libc++abi( 7842): guardedLoadModule@1:45922
+
+E/libc++abi( 7842): metroRequire@1:45432
+
+E/libc++abi( 7842): anonymous@1:130618
+
+E/libc++abi( 7842): loadModuleImplementation@1:46399
+
+E/libc++abi( 7842): guardedLoadModule@1:45922
+
+E/libc++abi( 7842): metroRequire@1:45432
+
+E/libc++abi( 7842): anonymous@1:145393
+
+E/libc++abi( 7842): loadModuleImplementation@1:46399
+
+E/libc++abi( 7842): guardedLoadModule@1:45922
+
+E/libc++abi( 7842): metroRequire@1:45432
+
+E/libc++abi( 7842): anonymous@1:143919
+
+E/libc++abi( 7842): loadModuleImplementation@1:46399
+
+E/libc++abi( 7842): guardedLoadModule@1:45922
+
+E/libc++abi( 7842): metroRequire@1:45432
+
+E/libc++abi( 7842): anonymous@1:142439
+
+E/libc++abi( 7842): loadModuleImplementation@1:46399
+
+E/libc++abi( 7842): guardedLoadModule@1:45922
+
+E/libc++abi( 7842): metroRequire@1:45432
+
+E/libc++abi( 7842): anonymous@1:141326
+
+E/libc++abi( 7842): loadModuleImplementation@1:46399
+
+E/libc++abi( 7842): guardedLoadModu
+
+F/libc    ( 7842): Fatal signal 6 (SIGABRT), code -1 (SI_QUEUE) in tid 7880 (mqt_v_js), pid 7842 (fpowertools.app)
+
+I/Gralloc4( 7842): mapper 4.x is not supported
+
+W/Gralloc4( 7842): allocator 4.x is not supported
+
+D/HostConnection( 7842): HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_native_sync_v3 ANDROID_EMU_native_sync_v4 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_YUV_Cache ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_sync_buffer_data ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_multi_configs ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_1 
+
+W/Parcel  ( 7842): Expecting binder but got null!
+
+W/unknown:BridgelessReact( 7842): ReactContext.onHostResume()
+
+W/unknown:BridgelessReact( 7842): ReactHost{0}.getOrCreateReactInstanceTask(): Executing ReactInstanceEventListeners
