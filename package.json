@@ -4,5 +4,9 @@
   "engines": {
     "node": ">=18"
   },
-  "packageManager": "pnpm@9.x"
+  "packageManager": "pnpm@9.x",
+  "dependencies": {
+    "expo-linear-gradient": "~15.0.8",
+    "react-dom": "19.1.0"
+  }
 }
