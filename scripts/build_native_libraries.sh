@@ -145,31 +145,37 @@ PC
   fi
 
   # ── 3. MuPDF ─────────────────────────────────────────────────────────────────
+  # MuPDF uses Makefile (not CMake). libmupdf.so is optional in CMakeLists.txt.
   if [[ ! -f "$THIRD_PARTY/mupdf/libs/$ABI/libmupdf.so" ]]; then
     echo "Building MuPDF..."
-    mkdir -p "$SRC_ROOT/mupdf-build-$ABI"
-    pushd "$SRC_ROOT/mupdf-build-$ABI" > /dev/null
+    CLANG_DIR="$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin"
+    MUPDF_CC="${CLANG_DIR}/${TRIPLE}${ANDROID_API}-clang"
+    MUPDF_CXX="${CLANG_DIR}/${TRIPLE}${ANDROID_API}-clang++"
+    MUPDF_AR="${CLANG_DIR}/llvm-ar"
 
-    cmake "${COMMON_CMAKE[@]}" \
-          -DANDROID_NATIVE_API_LEVEL="$ANDROID_API" \
-          -DENABLE_SHARED=ON \
-          -DENABLE_LIBMUPDF=ON \
-          -DENABLE_FREETYPE=OFF \
-          -DENABLE_OPENJPEG=OFF \
-          -DENABLE_JBIG2=OFF \
-          -DENABLE_PDF=ON \
-          -DENABLE_WERROR=OFF \
-          "$SRC_ROOT/mupdf"
-    cmake --build . -j"$(nproc)"
+    make -C "$SRC_ROOT/mupdf" \
+      HAVE_X11=no HAVE_GLFW=no HAVE_OBJCOPY=no \
+      HAVE_TESSERACT=no HAVE_LEPTONICA=no HAVE_CURL=no HAVE_GUMBO=no \
+      CC="$MUPDF_CC" CXX="$MUPDF_CXX" AR="$MUPDF_AR" \
+      build=release -j"$(nproc)" || true
 
-    MUPDF_SO=$(find . -name 'libmupdf.so' 2>/dev/null | head -1 || true)
-    if [[ -z "$MUPDF_SO" ]]; then
-      echo "ERROR: libmupdf.so not found for $ABI" >&2; exit 1
+    MUPDF_SO=$(find "$SRC_ROOT/mupdf" -name 'libmupdf.so' 2>/dev/null | head -1 || true)
+    if [[ -n "$MUPDF_SO" ]]; then
+      mkdir -p "$THIRD_PARTY/mupdf/libs/$ABI"
+      cp -v "$MUPDF_SO" "$THIRD_PARTY/mupdf/libs/$ABI/"
+      echo "MuPDF ✓"
+    else
+      MUPDF_A=$(find "$SRC_ROOT/mupdf" -name 'libmupdf.a' 2>/dev/null | head -1 || true)
+      if [[ -n "$MUPDF_A" ]]; then
+        mkdir -p "$THIRD_PARTY/mupdf/libs/$ABI"
+        "$MUPDF_CXX" -shared -o "$THIRD_PARTY/mupdf/libs/$ABI/libmupdf.so" \
+          -Wl,--whole-archive "$MUPDF_A" -Wl,--no-whole-archive \
+          -landroid -llog
+        echo "MuPDF ✓ (from static lib)"
+      else
+        echo "WARNING: MuPDF build skipped — PDF rendering via MuPDF will be disabled." >&2
+      fi
     fi
-    mkdir -p "$THIRD_PARTY/mupdf/libs/$ABI"
-    cp -v "$MUPDF_SO" "$THIRD_PARTY/mupdf/libs/$ABI/"
-    popd > /dev/null
-    echo "MuPDF ✓"
   else
     echo "MuPDF already built for $ABI (skip)"
   fi
