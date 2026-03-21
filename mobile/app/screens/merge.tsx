@@ -83,7 +83,7 @@ export default function MergeScreen() {
     });
   };
 
-  const handleMerge = async (onProgress: (pct: number, label?: string) => void) => {
+  const handleMerge = async (onProgress: (pct: number, label?: string) => void): Promise<string> => {
     if (files.length < 2) throw new Error('Please select at least 2 PDF files to merge');
     await ensureOutputDir();
     const outputPath = getOutputPath('merged_output.pdf');
@@ -92,8 +92,7 @@ export default function MergeScreen() {
     onProgress(30, 'Loading PDF documents via QPDF...');
     await new Promise(r => setTimeout(r, 400));
     onProgress(60, `Merging ${files.length} PDFs...${invertColors ? ' (Inverting Colors)' : ''}`);
-    // Native merge should handle processing colors if invertColors is true
-    await mergePdfs(files.map(f => f.path), outputPath);
+    await mergePdfs(files.map(f => f.path), outputPath, invertColors);
     onProgress(90, 'Writing output file...');
     await new Promise(r => setTimeout(r, 200));
     onProgress(100, 'Merge complete!');

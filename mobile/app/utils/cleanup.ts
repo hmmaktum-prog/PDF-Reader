@@ -1,30 +1,49 @@
 import * as FileSystem from 'expo-file-system';
 
+const TEMP_SUBDIRS = [
+  'ocr_output/pages',
+  '.temp',
+  'intermediate',
+];
+
 /**
  * Removes temporary files used by the app, such as OCR renders and cached paths.
+ * Only cleans DocumentPicker and ImagePicker cache items.
+ * Output files are preserved unless explicitly deleted by the user.
  */
 export async function cleanupTemporaryFiles(): Promise<void> {
   try {
-    const tempDir = FileSystem.cacheDirectory;
-    if (tempDir) {
-      const contents = await FileSystem.readDirectoryAsync(tempDir);
-      for (const item of contents) {
-        if (item.includes('DocumentPicker') || item.includes('ImagePicker')) {
-          await FileSystem.deleteAsync(`${tempDir}${item}`, { idempotent: true });
+    const cacheDir = FileSystem.cacheDirectory;
+    if (cacheDir) {
+      try {
+        const contents = await FileSystem.readDirectoryAsync(cacheDir);
+        for (const item of contents) {
+          if (item.includes('DocumentPicker') || item.includes('ImagePicker')) {
+            try {
+              await FileSystem.deleteAsync(`${cacheDir}${item}`, { idempotent: true });
+            } catch (itemError) {
+              console.debug(`Failed to delete cache item ${item}:`, itemError);
+            }
+          }
         }
+      } catch (cacheError) {
+        console.debug('Error reading cache directory:', cacheError);
       }
     }
 
-    // Custom output dirs mapped to QPDF / MuPDF
-    const nativeCacheDirs = [
-      '/storage/emulated/0/Download/PDFPowerTools/ocr_output/pages',
-      '/storage/emulated/0/Download/PDFPowerTools/.temp'
-    ];
-
-    for (const dir of nativeCacheDirs) {
-      const exists = await FileSystem.getInfoAsync(dir);
-      if (exists.exists && exists.isDirectory) {
-        await FileSystem.deleteAsync(dir, { idempotent: true });
+    const docDir = FileSystem.documentDirectory;
+    if (docDir) {
+      const appTempDir = `${docDir}PDFPowerTools/`;
+      for (const subdir of TEMP_SUBDIRS) {
+        const tempPath = `${appTempDir}${subdir}`;
+        try {
+          const info = await FileSystem.getInfoAsync(tempPath);
+          if (info.exists && info.isDirectory) {
+            await FileSystem.deleteAsync(tempPath, { idempotent: true });
+          }
+        } catch (dirError) {
+          console.debug(`Failed to clean temp directory ${subdir}:`, dirError);
+        }
       }
     }
 

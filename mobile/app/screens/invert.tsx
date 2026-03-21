@@ -4,6 +4,7 @@ import ToolShell from '../components/ToolShell';
 import { useAppTheme } from '../context/ThemeContext';
 import { pickSinglePdf } from '../utils/filePicker';
 import { getOutputPath, ensureOutputDir } from '../utils/outputPath';
+import { invertColorsPdf } from '../utils/nativeModules';
 
 export default function InvertScreen() {
   const { isDark } = useAppTheme();
@@ -27,16 +28,13 @@ export default function InvertScreen() {
   const accent = '#007AFF';
   const muted = isDark ? '#888' : '#666';
 
-  const handleAction = async (onProgress) => {
+  const handleAction = async (onProgress: (pct: number, label?: string) => void): Promise<string> => {
     if (!selectedFile) throw new Error('Please select a PDF file first');
     await ensureOutputDir();
     const outputPath = getOutputPath('inverted_output.pdf');
     onProgress(15, 'Rendering pages via MuPDF...');
-    await new Promise(r => setTimeout(r, 500));
     onProgress(50, 'Inverting pixel values...');
-    await new Promise(r => setTimeout(r, 600));
-    onProgress(80, 'Rebuilding PDF...');
-    await new Promise(r => setTimeout(r, 300));
+    await invertColorsPdf(selectedFile, outputPath);
     onProgress(100, 'Done!');
     return outputPath;
   };

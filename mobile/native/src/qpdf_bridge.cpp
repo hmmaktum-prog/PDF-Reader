@@ -14,9 +14,11 @@ Java_com_pdfpowertools_native_QPDFBridge_mergePdfs(
         JNIEnv* env,
         jobject /* this */,
         jstring inputPaths,
-        jstring outputPath) {
-    LOGI("Executing QPDF Merge");
+        jstring outputPath,
+        jboolean invertColors) {
+    LOGI("Executing QPDF Merge (invertColors=%s)", invertColors ? "true" : "false");
     // TODO: Parse inputPaths (comma-separated), use QPDF::addPageContents
+    // TODO: If invertColors is true, invert pixel values in each page stream
     return env->NewStringUTF("Merge Stub - Pending QPDF Core");
 }
 

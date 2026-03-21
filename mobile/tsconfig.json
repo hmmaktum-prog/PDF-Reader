@@ -3,7 +3,11 @@
   "compilerOptions": {
     "strict": false,
     "jsx": "react-native",
-    "moduleResolution": "node",
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "bundler",
     "lib": [
       "es2015",
       "es2017",

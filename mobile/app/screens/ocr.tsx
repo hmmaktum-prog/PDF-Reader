@@ -42,12 +42,12 @@ export default function OcrScreen() {
     }
   };
 
-  const handleDownloadPack = async (langId: string) => {
+  const handleDownloadPack = async (langId: string): Promise<void> => {
     setDownloadingPack(langId);
     await new Promise(r => setTimeout(r, 2000));
     setDownloadedPacks(prev => ({ ...prev, [langId]: true }));
     setDownloadingPack(null);
-    Alert.alert('Download Complete', `Offline language pack installed successfully.`);
+    Alert.alert('Download Complete', 'Offline language pack installed successfully.');
   };
 
   const textColor = isDark ? '#fff' : '#000';
@@ -55,25 +55,25 @@ export default function OcrScreen() {
   const accent = '#34C759';
   const muted = isDark ? '#888' : '#999';
 
-  const handleOcr = async (onProgress: (pct: number, label?: string) => void) => {
+  const handleOcr = async (onProgress: (pct: number, label?: string) => void): Promise<string> => {
     if (!selectedFile) throw new Error('Please select a PDF file first');
     if (!useGemini && !downloadedPacks[language]) {
-      throw new Error(`Please download the '${LANGUAGES.find(l => l.id === language)?.label}' offline pack first.`);
+      const langLabel = LANGUAGES.find(l => l.id === language)?.label || language;
+      throw new Error(`Please download the '${langLabel}' offline pack first.`);
     }
 
     await ensureOutputDir();
-    const outputDir = (getOutputPath('ocr_output')).replace('ocr_output', '');
     onProgress(10, 'Rendering pages via MuPDF...');
     await batchRenderPages(selectedFile, getOutputPath('ocr_pages'), 'jpeg', 300);
-    onProgress(35, useGemini ? 'Sending to Gemini ' + selectedModel + '...' : 'Running PaddleOCR offline...');
+    onProgress(35, useGemini ? `Sending to Gemini ${selectedModel}...` : 'Running PaddleOCR offline...');
     await new Promise(r => setTimeout(r, 1000));
     onProgress(65, 'Parsing OCR blocks...');
     await new Promise(r => setTimeout(r, 500));
-    onProgress(85, 'Generating ' + outputFormat + ' output...');
+    onProgress(85, `Generating ${outputFormat} output...`);
     await new Promise(r => setTimeout(r, 500));
     onProgress(100, 'OCR complete!');
     const ext = outputFormat === 'text' ? 'txt' : outputFormat === 'docx' ? 'docx' : 'json';
-    return getOutputPath('ocr_result.' + ext);
+    return getOutputPath(`ocr_result.${ext}`);
   };
 
   return (

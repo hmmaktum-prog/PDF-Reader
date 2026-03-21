@@ -19,9 +19,13 @@ function ensureAndroid(name: string): void {
 // QPDF Operations
 // ──────────────────────────────────────────────
 
-export async function mergePdfs(inputPaths: string[], outputPath: string): Promise<string> {
+export async function mergePdfs(
+  inputPaths: string[],
+  outputPath: string,
+  invertColors: boolean = false
+): Promise<string> {
   ensureAndroid('mergePdfs');
-  return await QPDFBridge.mergePdfs(inputPaths.join(','), outputPath);
+  return await QPDFBridge.mergePdfs(inputPaths.join(','), outputPath, invertColors);
 }
 
 export async function splitPdf(inputPath: string, outputDir: string, ranges: string): Promise<boolean> {
@@ -137,6 +141,11 @@ export async function enhanceContrastPdf(
 ): Promise<boolean> {
   ensureAndroid('enhanceContrastPdf');
   return await MuPDFBridge.enhanceContrastPdf(inputPath, outputPath, level);
+}
+
+export async function invertColorsPdf(inputPath: string, outputPath: string): Promise<boolean> {
+  ensureAndroid('invertColorsPdf');
+  return await MuPDFBridge.invertColorsPdf(inputPath, outputPath);
 }
 
 // ──────────────────────────────────────────────

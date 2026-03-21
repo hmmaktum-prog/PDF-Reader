@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,12 +7,17 @@ import {
   ScrollView,
   StatusBar,
   Switch,
+  TextInput,
+  Alert,
+  Modal,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme } from '../context/ThemeContext';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const APP_VERSION = '1.0.0';
 
@@ -20,6 +25,61 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const { isDark, theme, setTheme } = useAppTheme();
   const router = useRouter();
+  const [showGeminiModal, setShowGeminiModal] = useState(false);
+  const [geminiKey, setGeminiKey] = useState('');
+  const [hasGeminiKey, setHasGeminiKey] = useState(false);
+
+  useEffect(() => {
+    loadGeminiKey();
+  }, []);
+
+  const loadGeminiKey = async () => {
+    try {
+      const key = await AsyncStorage.getItem('GEMINI_API_KEY');
+      setHasGeminiKey(!!key);
+      if (key) {
+        setGeminiKey(key);
+      }
+    } catch (e) {
+      console.error('Failed to load Gemini API key:', e);
+    }
+  };
+
+  const saveGeminiKey = async () => {
+    if (!geminiKey.trim()) {
+      Alert.alert('Validation', 'Please enter a valid API key');
+      return;
+    }
+    try {
+      await AsyncStorage.setItem('GEMINI_API_KEY', geminiKey.trim());
+      setHasGeminiKey(true);
+      setShowGeminiModal(false);
+      Alert.alert('Success', 'Gemini API key saved');
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (e) {
+      Alert.alert('Error', 'Failed to save API key');
+    }
+  };
+
+  const deleteGeminiKey = async () => {
+    Alert.alert('Remove API Key', 'Are you sure?', [
+      { text: 'Cancel', onPress: () => {} },
+      {
+        text: 'Remove',
+        onPress: async () => {
+          try {
+            await AsyncStorage.removeItem('GEMINI_API_KEY');
+            setHasGeminiKey(false);
+            setGeminiKey('');
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          } catch (e) {
+            Alert.alert('Error', 'Failed to remove API key');
+          }
+        },
+        style: 'destructive',
+      },
+    ]);
+  };
 
   const bg = isDark ? '#0a0e1a' : '#f0f2f8';
   const cardBg = isDark ? '#141824' : '#ffffff';
@@ -139,7 +199,8 @@ export default function SettingsScreen() {
           <SettingRow
             icon="🤖"
             label="Gemini AI Model"
-            subtitle="Used for online OCR text extraction"
+            subtitle={hasGeminiKey ? 'API key configured ✓' : 'Click to add API key'}
+            onPress={() => setShowGeminiModal(true)}
             right={<Text style={[styles.arrow, { color: muted }]}>›</Text>}
           />
           <SettingRow
@@ -170,6 +231,64 @@ export default function SettingsScreen() {
           </LinearGradient>
         </View>
       </ScrollView>
+
+      {/* Gemini API Key Modal */}
+      <Modal
+        visible={showGeminiModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowGeminiModal(false)}
+      >
+        <View style={[styles.modalOverlay, { backgroundColor: isDark ? '#000000aa' : '#00000055' }]}>
+          <View style={[styles.modalContent, { backgroundColor: cardBg }]}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <Text style={[styles.modalTitle, { color: text }]}>🤖 Gemini API Key</Text>
+              <TouchableOpacity onPress={() => setShowGeminiModal(false)}>
+                <Text style={{ color: muted, fontSize: 24 }}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={[styles.modalLabel, { color: muted }]}>Enter your Gemini API key for OCR features</Text>
+
+            <TextInput
+              style={[
+                styles.apiKeyInput,
+                {
+                  backgroundColor: isDark ? '#2a2a2e' : '#f0f0f0',
+                  borderColor: border,
+                  color: text,
+                },
+              ]}
+              placeholder="AIza..."
+              placeholderTextColor={muted}
+              value={geminiKey}
+              onChangeText={setGeminiKey}
+              secureTextEntry={true}
+              editable={true}
+            />
+
+            <Text style={[styles.helpText, { color: muted }]}>
+              Get your API key from{'\n'}
+              <Text style={{ color: '#007AFF', fontWeight: '600' }}>console.cloud.google.com</Text>
+            </Text>
+
+            <View style={styles.modalButtonRow}>
+              <TouchableOpacity
+                style={[styles.modalButton, { backgroundColor: '#FF3B3022', borderColor: '#FF3B30' }]}
+                onPress={deleteGeminiKey}
+              >
+                <Text style={{ color: '#FF3B30', fontWeight: '600' }}>Delete</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, { backgroundColor: accent, borderColor: accent }]}
+                onPress={saveGeminiKey}
+              >
+                <Text style={{ color: '#fff', fontWeight: '700' }}>Save Key</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -221,5 +340,50 @@ const styles = StyleSheet.create({
     paddingVertical: 20, paddingHorizontal: 40, borderRadius: 20,
     alignItems: 'center',
     elevation: 6, shadowColor: '#1a4fd6', shadowOpacity: 0.4, shadowOffset: { width: 0, height: 6 }, shadowRadius: 14,
+  },
+
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 32,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  modalLabel: {
+    fontSize: 14,
+    marginBottom: 14,
+    lineHeight: 20,
+  },
+  apiKeyInput: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 14,
+    marginBottom: 12,
+  },
+  helpText: {
+    fontSize: 12,
+    marginBottom: 20,
+    lineHeight: 18,
+  },
+  modalButtonRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: 'center',
   },
 });

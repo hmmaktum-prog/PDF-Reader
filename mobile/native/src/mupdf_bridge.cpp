@@ -112,3 +112,17 @@ Java_com_pdfpowertools_native_MuPDFBridge_enhanceContrastPdf(
     //       Use fz_pixmap pixel manipulation then rebuild PDF
     return JNI_TRUE;
 }
+
+// ─── Invert Colors ───────────────────────────────────────────
+extern "C" JNIEXPORT jboolean JNICALL
+Java_com_pdfpowertools_native_MuPDFBridge_invertColorsPdf(
+        JNIEnv* env,
+        jobject /* this */,
+        jstring inputPath,
+        jstring outputPath) {
+    LOGI("Executing MuPDF Invert Colors");
+    // TODO: Render each page via MuPDF, invert pixel values (pixel = 255 - pixel)
+    //       Preserve alpha channel for transparency
+    //       Rebuild PDF from inverted images
+    return JNI_TRUE;
+}
