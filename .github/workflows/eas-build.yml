@@ -28,8 +28,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -48,8 +46,6 @@ jobs:
         run: |
           if [ -z "${{ secrets.EXPO_TOKEN }}" ]; then
             echo "ERROR: EXPO_TOKEN secret is not set!"
-            echo "Go to: GitHub repo → Settings → Secrets → Actions → New secret"
-            echo "Name: EXPO_TOKEN"
             exit 1
           fi
           echo "EXPO_TOKEN is set."
