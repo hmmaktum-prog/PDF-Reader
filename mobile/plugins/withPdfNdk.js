@@ -40,7 +40,7 @@ const withCustomNativeBuild = (config) => {
 
     // cmake argument block — injected into defaultConfig { externalNativeBuild { cmake { ... } } }
     const cmakeArgs = isKts
-      ? `cppFlags += "-std=c++17"
+      ? `cppFlags += "-std=c++20"
                 abiFilters += listOf("arm64-v8a", "x86_64")
                 arguments += listOf(
                     "-DANDROID_STL=c++_shared",
@@ -48,7 +48,7 @@ const withCustomNativeBuild = (config) => {
                     "-DREACT_ANDROID_DIR=\${rootProject.projectDir}/../node_modules/react-native/ReactAndroid",
                     "-DREACT_ANDROID_BUILD_DIR=\${rootProject.projectDir}/../node_modules/react-native/ReactAndroid/build"
                 )`
-      : `cppFlags "-std=c++17"
+      : `cppFlags "-std=c++20"
                 abiFilters "arm64-v8a", "x86_64"
                 arguments "-DANDROID_STL=c++_shared",
                           "-DPROJECT_BUILD_DIR=\${projectDir}/build",
