@@ -100,9 +100,18 @@ export default function HomeScreen() {
           >
             <View style={styles.heroGrid} />
 
-            <TouchableOpacity style={styles.themeBtn} onPress={cycleTheme} testID="button-theme-toggle">
-              <Text style={styles.themeBtnText}>{themeIcon}</Text>
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <TouchableOpacity style={styles.themeBtn} onPress={cycleTheme} testID="button-theme-toggle">
+                <Text style={styles.themeBtnText}>{themeIcon}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.themeBtn}
+                onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/screens/settings'); }}
+                testID="button-settings"
+              >
+                <Text style={styles.themeBtnText}>⚙️</Text>
+              </TouchableOpacity>
+            </View>
 
             {!isLandscape && (
               <Animated.View style={[styles.heroIconWrap, { transform: [{ scale: pulseAnim }] }]}>

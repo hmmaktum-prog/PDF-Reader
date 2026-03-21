@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, TextInput, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, TextInput, ScrollView, Alert } from 'react-native';
 import ToolShell from '../components/ToolShell';
 import { useAppTheme } from '../context/ThemeContext';
 import { nupLayout } from '../utils/nativeModules';
+import { pickSinglePdf } from '../utils/filePicker';
+import { getOutputPath, ensureOutputDir } from '../utils/outputPath';
 
 const STANDARD_LAYOUTS = [
   { id: '2x1', label: '2-Up', cols: 2, rows: 1 },
@@ -26,6 +28,7 @@ export default function NupScreen() {
   const [customRows, setCustomRows] = useState('2');
   const [sequence, setSequence] = useState('Z');
   const [selectedFile, setSelectedFile] = useState('');
+  const [selectedFileName, setSelectedFileName] = useState('');
 
   const textColor = isDark ? '#fff' : '#000';
   const cardBg = isDark ? '#1e1e1e' : '#f0f0f0';
@@ -36,8 +39,20 @@ export default function NupScreen() {
   const cols = isCustom ? (parseInt(customCols) || 1) : layout.cols;
   const rows = isCustom ? (parseInt(customRows) || 1) : layout.rows;
 
-  const handleAction = async (onProgress) => {
+  const handlePickFile = async () => {
+    try {
+      const picked = await pickSinglePdf();
+      if (!picked) return;
+      setSelectedFile(picked.path);
+      setSelectedFileName(picked.name);
+    } catch (e: any) {
+      Alert.alert('File Picker Error', e.message);
+    }
+  };
+
+  const handleAction = async (onProgress: (pct: number, label?: string) => void) => {
     if (!selectedFile) throw new Error('Please select a PDF file first');
+    await ensureOutputDir();
     const outputPath = getOutputPath('nup_output.pdf');
     onProgress(20, 'Loading PDF...');
     await new Promise(r => setTimeout(r, 300));
@@ -53,21 +68,23 @@ export default function NupScreen() {
     <ToolShell title="N-Up Layout" subtitle="Multiple pages per sheet" onExecute={handleAction} executeLabel={`🪟 Apply ${cols * rows}-Up Layout`}>
       <TouchableOpacity
         style={[styles.pickBtn, { backgroundColor: cardBg, borderColor: accent }]}
-        onPress={() => setSelectedFile('/mock/document.pdf')}
+        onPress={handlePickFile}
         activeOpacity={0.7}
       >
         <Text style={{ fontSize: 30, marginBottom: 6 }}>📁</Text>
         <Text style={[styles.pickText, { color: textColor }]}>
-          {selectedFile ? selectedFile.split('/').pop() : 'Select PDF File'}
+          {selectedFileName || 'Select PDF File'}
         </Text>
-        <Text style={{ color: muted, fontSize: 12 }}>Tap to browse</Text>
+        <Text style={{ color: muted, fontSize: 12 }}>
+          {selectedFile ? 'Tap to change file' : 'Tap to browse'}
+        </Text>
       </TouchableOpacity>
 
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
         <Text style={[styles.sectionLabel, { color: textColor }]}>🪟 Grid Layout</Text>
         <TouchableOpacity onPress={() => setIsCustom(!isCustom)}>
           <Text style={{ color: accent, fontWeight: '600', fontSize: 13 }}>
-            {isCustom ? "Use Standard" : "Custom Grid"}
+            {isCustom ? 'Use Standard' : 'Custom Grid'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -127,7 +144,7 @@ export default function NupScreen() {
           {Array.from({ length: Math.min(cols * rows, 30) }).map((_, i) => (
             <View
               key={i}
-              style={[styles.miniPage, { borderColor: isDark ? '#555' : '#ccc', width: `${100 / cols}%`, aspectRatio: 0.7 }]}
+              style={[styles.miniPage, { borderColor: isDark ? '#555' : '#ccc', width: `${100 / cols}%` as any, aspectRatio: 0.7 }]}
             >
               <Text style={{ color: muted, fontSize: 8 }}>{i + 1}</Text>
             </View>

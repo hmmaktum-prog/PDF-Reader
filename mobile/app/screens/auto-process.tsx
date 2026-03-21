@@ -7,6 +7,7 @@ import DraggableFlatList, { ScaleDecorator, RenderItemParams } from 'react-nativ
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getOutputPath, ensureOutputDir } from '../utils/outputPath';
 
 const DEFAULT_STEPS = [
   { id: 'whiten', icon: '🧹', label: 'Whiten Background', desc: 'Remove yellow tint (MuPDF)' },
@@ -72,6 +73,7 @@ export default function AutoProcessScreen() {
 
   const handleAction = async (onProgress: (pct: number, label?: string) => void) => {
     if (!selectedFile) throw new Error('Please select a PDF file first');
+    await ensureOutputDir();
     const outputPath = getOutputPath('auto_processed.pdf');
     const activeSteps = steps.filter(s => enabled[s.id]);
     if (activeSteps.length === 0) throw new Error('অন্তত ১টি ধাপ সক্রিয় রাখুন');

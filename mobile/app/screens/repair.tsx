@@ -4,6 +4,7 @@ import ToolShell from '../components/ToolShell';
 import { useAppTheme } from '../context/ThemeContext';
 import { repairPdf } from '../utils/nativeModules';
 import { pickSinglePdf } from '../utils/filePicker';
+import { getOutputPath, ensureOutputDir } from '../utils/outputPath';
 
 const REPAIR_FEATURES = [
   { icon: '🔧', label: 'Fix cross-reference table', desc: 'Rebuilt with QPDF linearization' },
@@ -38,6 +39,7 @@ export default function RepairScreen() {
 
   const handleAction = async (onProgress: (pct: number, label?: string) => void) => {
     if (!selectedFile) throw new Error('Please select a PDF file first');
+    await ensureOutputDir();
     const outputPath = getOutputPath('repaired_output.pdf');
     
     if (isEncrypted && password) {

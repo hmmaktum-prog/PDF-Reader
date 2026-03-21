@@ -7,6 +7,7 @@ import * as ImagePicker from 'expo-image-picker';
 import DraggableFlatList, { ScaleDecorator, RenderItemParams } from 'react-native-draggable-flatlist';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
+import { getOutputPath, ensureOutputDir } from '../utils/outputPath';
 
 interface AppImage {
   id: string;
@@ -74,6 +75,7 @@ export default function ImageToPdfScreen() {
 
   const handleAction = async (onProgress: (pct: number, label?: string) => void) => {
     if (images.length === 0) throw new Error('Please select at least 1 image');
+    await ensureOutputDir();
     const outputPath = getOutputPath('images_output.pdf');
     onProgress(10, 'Preparing images...');
     await new Promise(r => setTimeout(r, 600));

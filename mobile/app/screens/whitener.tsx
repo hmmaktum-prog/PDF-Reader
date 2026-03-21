@@ -4,6 +4,7 @@ import ToolShell from '../components/ToolShell';
 import { useAppTheme } from '../context/ThemeContext';
 import { whiteningPdf, geminiAiWhitening } from '../utils/nativeModules';
 import { pickSinglePdf } from '../utils/filePicker';
+import { getOutputPath, ensureOutputDir } from '../utils/outputPath';
 
 const LEVELS = [
   { val: 1, label: 'Light', desc: 'Subtle, preserves original tone' },
@@ -36,6 +37,7 @@ export default function WhitenerScreen() {
 
   const handleAction = async (onProgress: (pct: number, label?: string) => void) => {
     if (!selectedFile) throw new Error('Please select a PDF file first');
+    await ensureOutputDir();
     const outputPath = getOutputPath('whitened_output.pdf');
 
     if (useAI) {

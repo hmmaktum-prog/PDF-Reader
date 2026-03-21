@@ -1,21 +1,36 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import ToolShell from '../components/ToolShell';
 import { useAppTheme } from '../context/ThemeContext';
 import { enhanceContrastPdf } from '../utils/nativeModules';
+import { pickSinglePdf } from '../utils/filePicker';
+import { getOutputPath, ensureOutputDir } from '../utils/outputPath';
 
 export default function EnhanceContrastScreen() {
   const { isDark } = useAppTheme();
   const [level, setLevel] = useState(3);
   const [selectedFile, setSelectedFile] = useState('');
+  const [selectedFileName, setSelectedFileName] = useState('');
 
   const textColor = isDark ? '#fff' : '#000';
   const cardBg = isDark ? '#1e1e1e' : '#f0f0f0';
   const accent = '#007AFF';
   const muted = isDark ? '#888' : '#777';
 
-  const handleAction = async (onProgress) => {
+  const handlePickFile = async () => {
+    try {
+      const picked = await pickSinglePdf();
+      if (!picked) return;
+      setSelectedFile(picked.path);
+      setSelectedFileName(picked.name);
+    } catch (e: any) {
+      Alert.alert('File Picker Error', e.message);
+    }
+  };
+
+  const handleAction = async (onProgress: (pct: number, label?: string) => void) => {
     if (!selectedFile) throw new Error('Please select a PDF file first');
+    await ensureOutputDir();
     const outputPath = getOutputPath('contrast_enhanced.pdf');
     onProgress(15, 'Rendering pages via MuPDF...');
     await new Promise(r => setTimeout(r, 400));
@@ -31,15 +46,17 @@ export default function EnhanceContrastScreen() {
     <ToolShell title="Enhance Contrast" subtitle="Fix faded or unclear scans" onExecute={handleAction} executeLabel="🔲 Enhance Contrast">
       <TouchableOpacity
         style={[styles.pickBtn, { backgroundColor: cardBg, borderColor: accent }]}
-        onPress={() => setSelectedFile('/mock/document.pdf')}
+        onPress={handlePickFile}
         testID="button-pick-file"
         activeOpacity={0.7}
       >
         <Text style={{ fontSize: 30, marginBottom: 6 }}>📁</Text>
         <Text style={[styles.pickText, { color: textColor }]}>
-          {selectedFile ? selectedFile.split('/').pop() : 'Select PDF File'}
+          {selectedFileName || 'Select PDF File'}
         </Text>
-        <Text style={{ color: muted, fontSize: 12 }}>Tap to browse</Text>
+        <Text style={{ color: muted, fontSize: 12 }}>
+          {selectedFile ? 'Tap to change file' : 'Tap to browse'}
+        </Text>
       </TouchableOpacity>
 
       <View style={[styles.previewBox, { backgroundColor: cardBg }]}>
@@ -73,7 +90,7 @@ export default function EnhanceContrastScreen() {
         <Text style={{ fontSize: 20, marginBottom: 6 }}>💡</Text>
         <Text style={{ color: textColor, fontSize: 14, fontWeight: '600', marginBottom: 4 }}>When to use</Text>
         <Text style={{ color: muted, fontSize: 13, lineHeight: 20 }}>
-          Mals faded photocopies, old scanned notes, handwritten documents. MuPDF renders each page then applies contrast enhancement.
+          Best for faded photocopies, old scanned notes, handwritten documents. MuPDF renders each page then applies contrast enhancement.
         </Text>
       </View>
     </ToolShell>

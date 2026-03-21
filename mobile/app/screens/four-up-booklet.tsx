@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import ToolShell from '../components/ToolShell';
 import { useAppTheme } from '../context/ThemeContext';
 import { fourUpBooklet } from '../utils/nativeModules';
 import { getFourUpBookletChunks } from '../utils/fourUpBooklet';
+import { pickSinglePdf } from '../utils/filePicker';
+import { getOutputPath, ensureOutputDir } from '../utils/outputPath';
 
 const ORIENTATIONS = [
   { id: 'landscape', label: '🌄 Landscape', hint: 'Wider pages, horizontal layout' },
@@ -13,6 +15,7 @@ const ORIENTATIONS = [
 export default function FourUpBookletScreen() {
   const { isDark } = useAppTheme();
   const [selectedFile, setSelectedFile] = useState('');
+  const [selectedFileName, setSelectedFileName] = useState('');
   const [orientation, setOrientation] = useState('landscape');
 
   const textColor = isDark ? '#fff' : '#000';
@@ -20,8 +23,20 @@ export default function FourUpBookletScreen() {
   const accent = '#007AFF';
   const muted = isDark ? '#888' : '#999';
 
-  const handleAction = async (onProgress) => {
+  const handlePickFile = async () => {
+    try {
+      const picked = await pickSinglePdf();
+      if (!picked) return;
+      setSelectedFile(picked.path);
+      setSelectedFileName(picked.name);
+    } catch (e: any) {
+      Alert.alert('File Picker Error', e.message);
+    }
+  };
+
+  const handleAction = async (onProgress: (pct: number, label?: string) => void) => {
     if (!selectedFile) throw new Error('Please select a PDF file first');
+    await ensureOutputDir();
     const outputPath = getOutputPath('4up_booklet_output.pdf');
     onProgress(20, 'Analyzing pages...');
     await new Promise(r => setTimeout(r, 400));
@@ -37,15 +52,17 @@ export default function FourUpBookletScreen() {
     <ToolShell title="4-Up Booklet" subtitle="4 pages per sheet in booklet order" onExecute={handleAction} executeLabel="📋 Create 4-Up Booklet">
       <TouchableOpacity
         style={[styles.pickBtn, { backgroundColor: cardBg, borderColor: accent }]}
-        onPress={() => setSelectedFile('/mock/document.pdf')}
+        onPress={handlePickFile}
         testID="button-pick-file"
         activeOpacity={0.7}
       >
         <Text style={{ fontSize: 30, marginBottom: 6 }}>📁</Text>
         <Text style={[styles.pickText, { color: textColor }]}>
-          {selectedFile ? selectedFile.split('/').pop() : 'Select PDF File'}
+          {selectedFileName || 'Select PDF File'}
         </Text>
-        <Text style={{ color: muted, fontSize: 12 }}>Tap to browse</Text>
+        <Text style={{ color: muted, fontSize: 12 }}>
+          {selectedFile ? 'Tap to change file' : 'Tap to browse'}
+        </Text>
       </TouchableOpacity>
 
       <View style={[styles.infoBox, { backgroundColor: cardBg }]}>

@@ -6,6 +6,7 @@ import { grayscalePdf, renderPageToImage } from '../utils/nativeModules';
 import { pickSinglePdf } from '../utils/filePicker';
 import * as FileSystem from 'expo-file-system';
 import { Image, ActivityIndicator } from 'react-native';
+import { getOutputPath, ensureOutputDir } from '../utils/outputPath';
 
 export default function GrayscaleScreen() {
   const { isDark } = useAppTheme();
@@ -48,6 +49,7 @@ export default function GrayscaleScreen() {
 
   const handleAction = async (onProgress) => {
     if (!selectedFile) throw new Error('Please select a PDF file first');
+    await ensureOutputDir();
     const outputPath = getOutputPath('grayscale_output.pdf');
     onProgress(20, 'Rendering via MuPDF...');
     await new Promise(r => setTimeout(r, 500));
@@ -110,8 +112,8 @@ export default function GrayscaleScreen() {
         <Text style={{ fontSize: 28, marginBottom: 8 }}>🖤</Text>
         <Text style={[styles.infoTitle, { color: textColor }]}>Grayscale Conversion</Text>
         <Text style={{ color: muted, textAlign: 'center', lineHeight: 22 }}>
-          রঙিন PDF ফাইলকে সম্পূর্ণ সাদাকালো বা ধূসর রঙে রূপান্তর করুন।
-          প্রিন্টিং খরচ কমাতে বিশেষভাবে কাজ করে।
+          Convert your colorful PDF to complete black & white or grayscale.
+          Especially useful for reducing printing costs.
         </Text>
       </View>
 

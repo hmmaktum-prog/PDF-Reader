@@ -6,6 +6,7 @@ import { rotatePdf, renderPageToImage } from '../utils/nativeModules';
 import { pickSinglePdf } from '../utils/filePicker';
 import * as FileSystem from 'expo-file-system';
 import { Image, ActivityIndicator } from 'react-native';
+import { getOutputPath, ensureOutputDir } from '../utils/outputPath';
 
 const ANGLES = [
   { deg: 90 as const, label: '↻ 90°', hint: 'Clockwise' },
@@ -58,6 +59,7 @@ export default function RotateScreen() {
 
   const handleRotate = async (onProgress: (pct: number, label?: string) => void) => {
     if (!selectedFile) throw new Error('Please select a PDF file first');
+    await ensureOutputDir();
     const outputPath = getOutputPath('rotated_output.pdf');
     onProgress(15, 'Loading PDF with QPDF...');
     await new Promise(r => setTimeout(r, 300));

@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Switch, Alert } from 'react-n
 import ToolShell from '../components/ToolShell';
 import { useAppTheme } from '../context/ThemeContext';
 import { pickSinglePdf } from '../utils/filePicker';
+import { getOutputPath, ensureOutputDir } from '../utils/outputPath';
 
 export default function InvertScreen() {
   const { isDark } = useAppTheme();
@@ -28,6 +29,7 @@ export default function InvertScreen() {
 
   const handleAction = async (onProgress) => {
     if (!selectedFile) throw new Error('Please select a PDF file first');
+    await ensureOutputDir();
     const outputPath = getOutputPath('inverted_output.pdf');
     onProgress(15, 'Rendering pages via MuPDF...');
     await new Promise(r => setTimeout(r, 500));
@@ -68,8 +70,8 @@ export default function InvertScreen() {
 
       <View style={[styles.card, { backgroundColor: cardBg }]}>
         <Text style={{ color: textColor, fontSize: 14, lineHeight: 22, marginBottom: 14 }}>
-          পড়ার সুবিধার জন্য সাদা ব্যাকগ্রাউন্ড পরিবর্তন করে কালো (ডার্ক মোড) তৈরি করুন।
-          রাতে পড়লে চোখের উপর চাপ কমায়।
+          Converts white backgrounds to black, creating a dark-mode PDF.
+          Reduces eye strain when reading at night.
         </Text>
         <View style={styles.row}>
           <View>

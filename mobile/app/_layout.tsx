@@ -44,6 +44,7 @@ const RootLayoutNav = () => {
       <Stack.Screen name="screens/repair" options={{ headerShown: false }} />
       <Stack.Screen name="screens/auto-process" options={{ headerShown: false }} />
       <Stack.Screen name="screens/ocr" options={{ headerShown: false }} />
+      <Stack.Screen name="screens/settings" options={{ headerShown: false }} />
     </Stack>
   );
 };

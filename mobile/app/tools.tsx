@@ -1,12 +1,14 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState, useMemo } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   SectionList,
+  FlatList,
   TouchableOpacity,
   StatusBar,
   Animated,
+  TextInput,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
@@ -72,12 +74,15 @@ const TOOL_SECTIONS = [
   },
 ];
 
+type ToolItem = typeof TOOL_SECTIONS[0]['data'][0];
+
 export default function ToolsScreen() {
   const router  = useRouter();
   const insets  = useSafeAreaInsets();
   const { isDark } = useAppTheme();
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const [query, setQuery] = useState('');
 
   useEffect(() => {
     Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }).start();
@@ -88,46 +93,128 @@ export default function ToolsScreen() {
   const text   = isDark ? '#ffffff' : '#0a0e1a';
   const muted  = isDark ? '#6e7a9a' : '#6c75a0';
   const border = isDark ? '#1e2538' : '#e2e5f0';
+  const inputBg = isDark ? '#1a2035' : '#ffffff';
+  const accent = '#007AFF';
+
+  const filteredSections = useMemo(() => {
+    if (!query.trim()) return TOOL_SECTIONS;
+    const q = query.toLowerCase();
+    return TOOL_SECTIONS
+      .map(section => ({
+        ...section,
+        data: section.data.filter(
+          item =>
+            item.name.toLowerCase().includes(q) ||
+            item.desc.toLowerCase().includes(q)
+        ),
+      }))
+      .filter(section => section.data.length > 0);
+  }, [query]);
+
+  const flatResults: ToolItem[] = useMemo(() => {
+    if (!query.trim()) return [];
+    return filteredSections.flatMap(s => s.data);
+  }, [filteredSections, query]);
+
+  const isSearching = query.trim().length > 0;
+
+  const renderCard = (item: ToolItem) => (
+    <TouchableOpacity
+      key={item.id}
+      style={[styles.card, { backgroundColor: cardBg, borderColor: border }]}
+      onPress={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        router.push(item.route as any);
+      }}
+      activeOpacity={0.72}
+    >
+      <LinearGradient colors={item.grad} style={styles.iconBg}>
+        <Text style={styles.icon}>{item.icon}</Text>
+      </LinearGradient>
+      <View style={styles.cardBody}>
+        <Text style={[styles.cardTitle, { color: text }]}>{item.name}</Text>
+        <Text style={[styles.cardDesc, { color: muted }]}>{item.desc}</Text>
+      </View>
+      <Text style={[styles.arrow, { color: muted }]}>›</Text>
+    </TouchableOpacity>
+  );
 
   return (
     <View style={[styles.root, { backgroundColor: bg }]}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor="transparent" translucent />
 
       <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
-        <SectionList
-          sections={TOOL_SECTIONS}
-          keyExtractor={(item) => item.id}
-          stickySectionHeadersEnabled={false}
-          contentContainerStyle={{ paddingBottom: insets.bottom + 24, paddingTop: 8, paddingHorizontal: 14 }}
-          renderSectionHeader={({ section }) => (
-            <View style={styles.sectionHead}>
-              <LinearGradient colors={section.grad} style={styles.sectionBadge}>
-                <Text style={styles.sectionEmoji}>{section.emoji}</Text>
-              </LinearGradient>
-              <Text style={[styles.sectionTitle, { color: text }]}>{section.title}</Text>
-              <View style={[styles.sectionLine, { backgroundColor: border }]} />
+        {/* Search Bar */}
+        <View style={[styles.searchWrap, { paddingTop: 8, paddingHorizontal: 14 }]}>
+          <View style={[styles.searchBox, { backgroundColor: inputBg, borderColor: border }]}>
+            <Text style={[styles.searchIcon, { color: muted }]}>🔍</Text>
+            <TextInput
+              style={[styles.searchInput, { color: text }]}
+              placeholder="Search tools..."
+              placeholderTextColor={muted}
+              value={query}
+              onChangeText={setQuery}
+              returnKeyType="search"
+              clearButtonMode="while-editing"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            {query.length > 0 && (
+              <TouchableOpacity onPress={() => setQuery('')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                <Text style={{ color: muted, fontSize: 16, paddingHorizontal: 8 }}>✕</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+
+        {/* Search Results */}
+        {isSearching ? (
+          flatResults.length > 0 ? (
+            <FlatList
+              data={flatResults}
+              keyExtractor={item => item.id}
+              contentContainerStyle={{ paddingHorizontal: 14, paddingTop: 12, paddingBottom: insets.bottom + 24 }}
+              ListHeaderComponent={
+                <Text style={[styles.resultCount, { color: muted }]}>
+                  {flatResults.length} result{flatResults.length !== 1 ? 's' : ''} for "{query}"
+                </Text>
+              }
+              renderItem={({ item }) => renderCard(item)}
+            />
+          ) : (
+            <View style={styles.emptyState}>
+              <Text style={{ fontSize: 48 }}>🔍</Text>
+              <Text style={[styles.emptyTitle, { color: text }]}>No tools found</Text>
+              <Text style={[styles.emptyDesc, { color: muted }]}>
+                Try searching for "merge", "compress", "ocr" etc.
+              </Text>
+              <TouchableOpacity
+                style={[styles.clearBtn, { backgroundColor: accent + '22', borderColor: accent }]}
+                onPress={() => setQuery('')}
+              >
+                <Text style={{ color: accent, fontWeight: '600' }}>Clear Search</Text>
+              </TouchableOpacity>
             </View>
-          )}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={[styles.card, { backgroundColor: cardBg, borderColor: border }]}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                router.push(item.route as any);
-              }}
-              activeOpacity={0.72}
-            >
-              <LinearGradient colors={item.grad} style={styles.iconBg}>
-                <Text style={styles.icon}>{item.icon}</Text>
-              </LinearGradient>
-              <View style={styles.cardBody}>
-                <Text style={[styles.cardTitle, { color: text }]}>{item.name}</Text>
-                <Text style={[styles.cardDesc, { color: muted }]}>{item.desc}</Text>
+          )
+        ) : (
+          /* Normal Section List */
+          <SectionList
+            sections={TOOL_SECTIONS}
+            keyExtractor={(item) => item.id}
+            stickySectionHeadersEnabled={false}
+            contentContainerStyle={{ paddingBottom: insets.bottom + 24, paddingTop: 8, paddingHorizontal: 14 }}
+            renderSectionHeader={({ section }) => (
+              <View style={styles.sectionHead}>
+                <LinearGradient colors={section.grad} style={styles.sectionBadge}>
+                  <Text style={styles.sectionEmoji}>{section.emoji}</Text>
+                </LinearGradient>
+                <Text style={[styles.sectionTitle, { color: text }]}>{section.title}</Text>
+                <View style={[styles.sectionLine, { backgroundColor: border }]} />
               </View>
-              <Text style={[styles.arrow, { color: muted }]}>›</Text>
-            </TouchableOpacity>
-          )}
-        />
+            )}
+            renderItem={({ item }) => renderCard(item)}
+          />
+        )}
       </Animated.View>
     </View>
   );
@@ -135,6 +222,23 @@ export default function ToolsScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
+
+  searchWrap: { paddingBottom: 4 },
+  searchBox: {
+    flexDirection: 'row', alignItems: 'center',
+    borderRadius: 14, borderWidth: 1,
+    paddingHorizontal: 12, height: 46,
+    elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowOffset: { width: 0, height: 2 }, shadowRadius: 6,
+  },
+  searchIcon: { fontSize: 15, marginRight: 8 },
+  searchInput: { flex: 1, fontSize: 15, paddingVertical: 0 },
+
+  resultCount: { fontSize: 12, marginBottom: 10, marginLeft: 2 },
+
+  emptyState: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },
+  emptyTitle: { fontSize: 18, fontWeight: '700', marginTop: 12, marginBottom: 6 },
+  emptyDesc: { fontSize: 14, textAlign: 'center', lineHeight: 20, marginBottom: 20 },
+  clearBtn: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12, borderWidth: 1 },
 
   sectionHead: {
     flexDirection: 'row', alignItems: 'center',

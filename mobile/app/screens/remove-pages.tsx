@@ -4,6 +4,7 @@ import ToolShell from '../components/ToolShell';
 import { useAppTheme } from '../context/ThemeContext';
 import { removePages } from '../utils/nativeModules';
 import { pickSinglePdf } from '../utils/filePicker';
+import { getOutputPath, ensureOutputDir } from '../utils/outputPath';
 
 export default function RemovePagesScreen() {
   const { isDark } = useAppTheme();
@@ -34,6 +35,7 @@ export default function RemovePagesScreen() {
   const handleAction = async (onProgress: (pct: number, label?: string) => void) => {
     if (!selectedFile) throw new Error('Please select a PDF file first');
     if (selected.size === 0) throw new Error('Please select at least 1 page to remove');
+    await ensureOutputDir();
     const outputPath = getOutputPath('removed_pages_output.pdf');
     onProgress(20, 'Loading PDF with QPDF...');
     await new Promise(r => setTimeout(r, 300));

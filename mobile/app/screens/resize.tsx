@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, TextInput, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, TextInput, Alert } from 'react-native';
 import ToolShell from '../components/ToolShell';
 import { useAppTheme } from '../context/ThemeContext';
 import { resizePdf } from '../utils/nativeModules';
+import { pickSinglePdf } from '../utils/filePicker';
+import { getOutputPath, ensureOutputDir } from '../utils/outputPath';
 
 const PAGE_SIZES = [
   { id: 'A4', label: 'A4', w: 595, h: 842, desc: '210×297 mm' },
@@ -17,13 +19,11 @@ export default function ResizeScreen() {
   const [targetSize, setTargetSize] = useState(PAGE_SIZES[0]);
   const [customW, setCustomW] = useState('595');
   const [customH, setCustomH] = useState('842');
-  
-  // New features
   const [scale, setScale] = useState('100');
-  const [alignH, setAlignH] = useState<'left'|'center'|'right'>('center');
-  const [alignV, setAlignV] = useState<'top'|'middle'|'bottom'>('middle');
-
+  const [alignH, setAlignH] = useState<'left' | 'center' | 'right'>('center');
+  const [alignV, setAlignV] = useState<'top' | 'middle' | 'bottom'>('middle');
   const [selectedFile, setSelectedFile] = useState('');
+  const [selectedFileName, setSelectedFileName] = useState('');
 
   const textColor = isDark ? '#fff' : '#000';
   const cardBg = isDark ? '#1e1e1e' : '#f0f0f0';
@@ -32,15 +32,26 @@ export default function ResizeScreen() {
   const accent = '#007AFF';
   const muted = isDark ? '#888' : '#999';
 
-  const handleAction = async (onProgress) => {
+  const handlePickFile = async () => {
+    try {
+      const picked = await pickSinglePdf();
+      if (!picked) return;
+      setSelectedFile(picked.path);
+      setSelectedFileName(picked.name);
+    } catch (e: any) {
+      Alert.alert('File Picker Error', e.message);
+    }
+  };
+
+  const handleAction = async (onProgress: (pct: number, label?: string) => void) => {
     if (!selectedFile) throw new Error('Please select a PDF file first');
+    await ensureOutputDir();
     const outputPath = getOutputPath('resized_output.pdf');
     const w = targetSize.id === 'Custom' ? parseInt(customW) : targetSize.w;
     const h = targetSize.id === 'Custom' ? parseInt(customH) : targetSize.h;
     onProgress(20, 'Loading PDF with QPDF...');
     await new Promise(r => setTimeout(r, 300));
     onProgress(55, `Resizing pages (Scale: ${scale}%, Align: ${alignH}/${alignV})...`);
-    // Pass alignment and scale to the native module
     await resizePdf(selectedFile, outputPath, w, h, parseInt(scale), alignH, alignV);
     onProgress(85, 'Writing output...');
     await new Promise(r => setTimeout(r, 300));
@@ -51,27 +62,29 @@ export default function ResizeScreen() {
   const ALIGNMENT_H = [
     { id: 'left', icon: '⇤' },
     { id: 'center', icon: '⇹' },
-    { id: 'right', icon: '⇥' }
+    { id: 'right', icon: '⇥' },
   ] as const;
-  
+
   const ALIGNMENT_V = [
     { id: 'top', icon: '⇡' },
     { id: 'middle', icon: '↕' },
-    { id: 'bottom', icon: '⇣' }
+    { id: 'bottom', icon: '⇣' },
   ] as const;
 
   return (
     <ToolShell title="Resize Pages" subtitle="Change page dimensions and scale" onExecute={handleAction} executeLabel="📐 Resize Pages">
       <TouchableOpacity
         style={[styles.pickBtn, { backgroundColor: cardBg, borderColor: accent }]}
-        onPress={() => setSelectedFile('/mock/document.pdf')}
+        onPress={handlePickFile}
         activeOpacity={0.7}
       >
         <Text style={{ fontSize: 30, marginBottom: 6 }}>📁</Text>
         <Text style={[styles.pickText, { color: textColor }]}>
-          {selectedFile ? selectedFile.split('/').pop() : 'Select PDF File'}
+          {selectedFileName || 'Select PDF File'}
         </Text>
-        <Text style={{ color: muted, fontSize: 12 }}>Tap to browse</Text>
+        <Text style={{ color: muted, fontSize: 12 }}>
+          {selectedFile ? 'Tap to change file' : 'Tap to browse'}
+        </Text>
       </TouchableOpacity>
 
       <Text style={[styles.sectionLabel, { color: textColor, marginBottom: 10 }]}>📐 Target Page Size</Text>
@@ -115,7 +128,7 @@ export default function ResizeScreen() {
           placeholderTextColor={muted}
         />
         <Text style={{ color: muted, fontSize: 12, flex: 1 }}>
-          10-200%. 100% preserves original size on the new page canvas.
+          10–200%. 100% preserves original size on the new canvas.
         </Text>
       </View>
 
@@ -128,7 +141,7 @@ export default function ResizeScreen() {
               <TouchableOpacity
                 key={a.id}
                 style={{ flex: 1, paddingVertical: 10, alignItems: 'center', backgroundColor: alignH === a.id ? accent : cardBg }}
-                onPress={() => setAlignH(a.id as any)}
+                onPress={() => setAlignH(a.id)}
               >
                 <Text style={{ color: alignH === a.id ? '#fff' : textColor, fontSize: 16 }}>{a.icon}</Text>
               </TouchableOpacity>
@@ -142,7 +155,7 @@ export default function ResizeScreen() {
               <TouchableOpacity
                 key={a.id}
                 style={{ flex: 1, paddingVertical: 10, alignItems: 'center', backgroundColor: alignV === a.id ? accent : cardBg }}
-                onPress={() => setAlignV(a.id as any)}
+                onPress={() => setAlignV(a.id)}
               >
                 <Text style={{ color: alignV === a.id ? '#fff' : textColor, fontSize: 16 }}>{a.icon}</Text>
               </TouchableOpacity>
