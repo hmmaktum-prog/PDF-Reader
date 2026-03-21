@@ -1,6 +1,8 @@
 import * as FileSystem from 'expo-file-system/legacy';
 
 const TEMP_SUBDIRS = [
+  'ocr_pages',
+  'render_cache',
   'ocr_output/pages',
   '.temp',
   'intermediate',

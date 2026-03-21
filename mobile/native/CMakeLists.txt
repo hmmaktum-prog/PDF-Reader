@@ -43,10 +43,35 @@ target_include_directories(pdfpowertools_native PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/src"
 )
 
+# Optional third-party native library locations (drop prebuilt libs/includes here).
+set(PDF_NATIVE_THIRD_PARTY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party")
+set(MUPDF_INCLUDE_DIR "${PDF_NATIVE_THIRD_PARTY_DIR}/mupdf/include")
+set(QPDF_INCLUDE_DIR "${PDF_NATIVE_THIRD_PARTY_DIR}/qpdf/include")
+set(MUPDF_LIB_DIR "${PDF_NATIVE_THIRD_PARTY_DIR}/mupdf/libs/${ANDROID_ABI}")
+set(QPDF_LIB_DIR "${PDF_NATIVE_THIRD_PARTY_DIR}/qpdf/libs/${ANDROID_ABI}")
+
+if(EXISTS "${MUPDF_INCLUDE_DIR}")
+  target_include_directories(pdfpowertools_native PRIVATE "${MUPDF_INCLUDE_DIR}")
+  target_compile_definitions(pdfpowertools_native PRIVATE HAS_MUPDF=1)
+endif()
+
+if(EXISTS "${QPDF_INCLUDE_DIR}")
+  target_include_directories(pdfpowertools_native PRIVATE "${QPDF_INCLUDE_DIR}")
+  target_compile_definitions(pdfpowertools_native PRIVATE HAS_QPDF=1)
+endif()
+
+if(EXISTS "${MUPDF_LIB_DIR}/libmupdf.so")
+  target_link_directories(pdfpowertools_native PRIVATE "${MUPDF_LIB_DIR}")
+  target_link_libraries(pdfpowertools_native mupdf)
+endif()
+
+if(EXISTS "${QPDF_LIB_DIR}/libqpdf.so")
+  target_link_directories(pdfpowertools_native PRIVATE "${QPDF_LIB_DIR}")
+  target_link_libraries(pdfpowertools_native qpdf)
+endif()
+
 target_link_libraries(
     pdfpowertools_native
     ${log-lib}
     ${android-lib}
-    # qpdf   # Phase 3 — add prebuilt .so
-    # mupdf  # Phase 3 — add prebuilt .so
 )

@@ -231,7 +231,7 @@ export default function HomeScreen() {
                 <Text style={styles.viewerHeaderTitle}>PDF Viewer</Text>
                 <Text style={styles.viewerHeaderSub}>MuPDF · 300 DPI Renderer</Text>
               </View>
-              <TouchableOpacity style={styles.openBtn} testID="button-upload-pdf">
+              <TouchableOpacity style={styles.openBtn} onPress={() => router.push('/screens/reader')} testID="button-upload-pdf">
                 <Text style={styles.openBtnText}>Open</Text>
               </TouchableOpacity>
             </LinearGradient>
